@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2160" height="1215" viewBox="0 0 2160 1215">
+  <defs>
+    <linearGradient id="header" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d1b2a"/>
+      <stop offset="1" stop-color="#123b5d"/>
+    </linearGradient>
+    <linearGradient id="etl" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e4f6f7"/>
+      <stop offset="1" stop-color="#c6e9ed"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#16324a" flood-opacity="0.16"/>
+    </filter>
+    <marker id="blueArrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 z" fill="#1682b6"/>
+    </marker>
+    <marker id="tealArrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+      <path d="M0,0 L14,7 L0,14 z" fill="#159a9c"/>
+    </marker>
+    <style>
+      .sans { font-family: Arial, Helvetica, sans-serif; }
+      .mono { font-family: "Courier New", monospace; }
+      .navy { fill: #0d3154; }
+      .muted { fill: #506679; }
+      .small { font-size: 19px; }
+      .body { font-size: 23px; }
+    </style>
+  </defs>
+
+  <rect width="2160" height="1215" fill="#f5f8fa"/>
+  <rect width="2160" height="154" fill="url(#header)"/>
+  <text x="84" y="77" class="sans" fill="#ffffff" font-size="52" font-weight="700">Data Model, ETL Mapping, and Data Search</text>
+  <text x="86" y="119" class="sans" fill="#b8d4e5" font-size="22">The data model defines the graph. Tube defines the searchable view.</text>
+  <text x="2010" y="83" class="sans" fill="#ffffff" font-size="49" font-weight="700">GEN</text>
+  <text x="2058" y="121" class="sans" fill="#54a7dc" font-size="43" font-weight="700">3</text>
+
+  <text x="1080" y="210" text-anchor="middle" class="sans navy" font-size="31" font-weight="700">Choose what users need to find on the Exploration page</text>
+  <text x="1080" y="246" text-anchor="middle" class="sans muted" font-size="20">That decision shapes the data model, the ETL mapping, and the Elasticsearch fields.</text>
+
+  <!-- Stage 1: data model -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="310" width="330" height="330" rx="18" fill="#ffffff" stroke="#c7d6e0" stroke-width="2"/>
+  </g>
+  <circle cx="112" cy="354" r="25" fill="#1682b6"/>
+  <text x="112" y="363" text-anchor="middle" class="sans" fill="#ffffff" font-size="23" font-weight="700">1</text>
+  <text x="155" y="362" class="sans navy" font-size="29" font-weight="700">Data model</text>
+  <text x="235" y="405" text-anchor="middle" class="sans muted" font-size="20">Graph structure</text>
+  <g stroke="#5e7280" stroke-width="8" stroke-linecap="round" fill="#ffffff">
+    <line x1="235" y1="456" x2="174" y2="515"/><line x1="235" y1="456" x2="296" y2="515"/>
+    <line x1="174" y1="515" x2="137" y2="572"/><line x1="174" y1="515" x2="211" y2="572"/>
+    <line x1="296" y1="515" x2="333" y2="572"/>
+    <circle cx="235" cy="456" r="20"/><circle cx="174" cy="515" r="20"/><circle cx="296" cy="515" r="20"/>
+    <circle cx="137" cy="572" r="20"/><circle cx="211" cy="572" r="20"/><circle cx="333" cy="572" r="20"/>
+  </g>
+  <text x="235" y="614" text-anchor="middle" class="sans muted small">nodes + relationships</text>
+
+  <line x1="415" y1="475" x2="492" y2="475" stroke="#1682b6" stroke-width="7" marker-end="url(#blueArrow)"/>
+
+  <!-- Stage 2: postgres -->
+  <g filter="url(#shadow)">
+    <rect x="510" y="310" width="330" height="330" rx="18" fill="#ffffff" stroke="#c7d6e0" stroke-width="2"/>
+  </g>
+  <circle cx="552" cy="354" r="25" fill="#1682b6"/>
+  <text x="552" y="363" text-anchor="middle" class="sans" fill="#ffffff" font-size="23" font-weight="700">2</text>
+  <text x="596" y="362" class="sans navy" font-size="29" font-weight="700">PostgreSQL</text>
+  <text x="675" y="405" text-anchor="middle" class="sans muted" font-size="20">Sheepdog source of truth</text>
+  <g stroke="#1682b6" fill="#e8f2f7" stroke-width="3">
+    <ellipse cx="675" cy="475" rx="103" ry="29"/><path d="M572 475v105c0 16 46 29 103 29s103-13 103-29V475"/><path d="M572 528c0 16 46 29 103 29s103-13 103-29"/>
+  </g>
+  <text x="675" y="501" text-anchor="middle" class="sans navy" font-size="23" font-weight="700">relational graph</text>
+  <text x="675" y="614" text-anchor="middle" class="sans muted small">complete submitted data</text>
+
+  <line x1="855" y1="475" x2="932" y2="475" stroke="#159a9c" stroke-width="7" marker-end="url(#tealArrow)"/>
+
+  <!-- Stage 3: Tube -->
+  <g filter="url(#shadow)">
+    <rect x="950" y="285" width="430" height="380" rx="18" fill="url(#etl)" stroke="#159a9c" stroke-width="3"/>
+  </g>
+  <circle cx="992" cy="329" r="25" fill="#159a9c"/>
+  <text x="992" y="338" text-anchor="middle" class="sans" fill="#ffffff" font-size="23" font-weight="700">3</text>
+  <text x="1036" y="338" class="sans navy" font-size="29" font-weight="700">Tube ETL</text>
+  <text x="1165" y="385" text-anchor="middle" class="mono navy" font-size="25" font-weight="700">etlMapping.yaml</text>
+  <rect x="1000" y="412" width="330" height="58" rx="9" fill="#ffffff" opacity="0.84"/>
+  <text x="1165" y="449" text-anchor="middle" class="sans navy" font-size="22">selects fields and paths</text>
+  <rect x="1000" y="487" width="330" height="58" rx="9" fill="#ffffff" opacity="0.84"/>
+  <text x="1165" y="524" text-anchor="middle" class="sans navy" font-size="22">flattens graph data</text>
+  <rect x="1000" y="562" width="330" height="58" rx="9" fill="#ffffff" opacity="0.84"/>
+  <text x="1165" y="599" text-anchor="middle" class="sans navy" font-size="22">builds search documents</text>
+
+  <line x1="1395" y1="475" x2="1472" y2="475" stroke="#159a9c" stroke-width="7" marker-end="url(#tealArrow)"/>
+
+  <!-- Stage 4: elastic -->
+  <g filter="url(#shadow)">
+    <rect x="1490" y="310" width="330" height="330" rx="18" fill="#ffffff" stroke="#c7d6e0" stroke-width="2"/>
+  </g>
+  <circle cx="1532" cy="354" r="25" fill="#159a9c"/>
+  <text x="1532" y="363" text-anchor="middle" class="sans" fill="#ffffff" font-size="23" font-weight="700">4</text>
+  <text x="1576" y="362" class="sans navy" font-size="29" font-weight="700">Elasticsearch</text>
+  <text x="1655" y="405" text-anchor="middle" class="sans muted" font-size="20">query-optimized indices</text>
+  <g class="sans" font-size="21" font-weight="700">
+    <rect x="1545" y="448" width="220" height="45" rx="7" fill="#e5f5f3" stroke="#159a9c"/><text x="1655" y="478" text-anchor="middle" class="navy">subject index</text>
+    <rect x="1545" y="510" width="220" height="45" rx="7" fill="#e5f5f3" stroke="#159a9c"/><text x="1655" y="540" text-anchor="middle" class="navy">file index</text>
+    <rect x="1545" y="572" width="220" height="45" rx="7" fill="#e5f5f3" stroke="#159a9c"/><text x="1655" y="602" text-anchor="middle" class="navy">other indices</text>
+  </g>
+
+  <line x1="1835" y1="475" x2="1912" y2="475" stroke="#1682b6" stroke-width="7" marker-end="url(#blueArrow)"/>
+
+  <!-- Stage 5: explorer -->
+  <g filter="url(#shadow)">
+    <rect x="1930" y="310" width="180" height="330" rx="18" fill="#ffffff" stroke="#c7d6e0" stroke-width="2"/>
+  </g>
+  <circle cx="1972" cy="354" r="25" fill="#1682b6"/>
+  <text x="1972" y="363" text-anchor="middle" class="sans" fill="#ffffff" font-size="23" font-weight="700">5</text>
+  <text x="2015" y="362" text-anchor="middle" class="sans navy" font-size="25" font-weight="700">Explorer</text>
+  <rect x="1960" y="414" width="120" height="135" rx="8" fill="#eef4f7" stroke="#8ca9b9"/>
+  <line x1="1975" y1="442" x2="2065" y2="442" stroke="#1682b6" stroke-width="9"/>
+  <line x1="1975" y1="470" x2="2040" y2="470" stroke="#98b5c3" stroke-width="8"/>
+  <line x1="1975" y1="495" x2="2055" y2="495" stroke="#98b5c3" stroke-width="8"/>
+  <line x1="1975" y1="520" x2="2025" y2="520" stroke="#159a9c" stroke-width="8"/>
+  <text x="2020" y="590" text-anchor="middle" class="sans muted small">tabs and filters</text>
+
+  <!-- Query paths -->
+  <rect x="70" y="755" width="2040" height="355" rx="20" fill="#ffffff" stroke="#d2dfe6" stroke-width="2"/>
+  <text x="1080" y="812" text-anchor="middle" class="sans navy" font-size="32" font-weight="700">Two query paths, two purposes</text>
+  <line x1="1080" y1="850" x2="1080" y2="1055" stroke="#d7e1e7" stroke-width="2"/>
+
+  <rect x="130" y="850" width="820" height="205" rx="14" fill="#f3f7fa"/>
+  <text x="170" y="892" class="sans navy" font-size="26" font-weight="700">Peregrine → PostgreSQL</text>
+  <text x="170" y="932" class="sans muted body">Use for complete graph data and relationships.</text>
+  <text x="170" y="975" class="sans muted body">Queries are flexible, but can be slower at scale.</text>
+  <rect x="170" y="1004" width="155" height="27" rx="13" fill="#f4d98a"/><text x="247" y="1024" text-anchor="middle" class="sans" fill="#614d12" font-size="16" font-weight="700">SOURCE OF TRUTH</text>
+
+  <rect x="1120" y="850" width="820" height="205" rx="14" fill="#eef9f8"/>
+  <text x="1160" y="892" class="sans navy" font-size="26" font-weight="700">Guppy → Elasticsearch</text>
+  <text x="1160" y="932" class="sans muted body">Use for fast Explorer searches and aggregations.</text>
+  <text x="1160" y="975" class="sans muted body">Queries are limited to fields emitted by Tube.</text>
+  <rect x="1160" y="1004" width="175" height="27" rx="13" fill="#a9dfd8"/><text x="1247" y="1024" text-anchor="middle" class="sans" fill="#124e4a" font-size="16" font-weight="700">SEARCH VIEW</text>
+
+  <text x="1080" y="1175" text-anchor="middle" class="sans muted" font-size="20">The ETL mapping is the contract between the complete data model and the fields exposed for fast search.</text>
+</svg>
