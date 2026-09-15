@@ -11,4 +11,4 @@ Contents
    :caption: Documentation
 
    datacommons/index
-   gen3/index
+ 
