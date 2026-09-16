@@ -161,7 +161,7 @@ index.
    :align: center
 
 The complete example is available as
-:download:`flatten-props-one-to-one.example.yaml <flatten-props-one-to-one.example.yaml>`.
+:download:`flatten-props-one-to-one.example.yaml <manifest/flatten-props-one-to-one.example.yaml>`.
 
 .. code-block:: yaml
 
@@ -564,15 +564,15 @@ The following names must remain aligned across the data commons:
 References
 ----------
 
-* ``Gen3 Forum September 2025 - ETL.pdf`` in the ``docs/source/datacommons``
-  directory.
-* :download:`Generic ETL mapping reference <etlMapping.example.yaml>`
-* :download:`Flatten props, one-to-one <flatten-props-one-to-one.example.yaml>`
-* :download:`Flatten props, many-to-one <flatten-props-many-to-star.example.yaml>`
-* :download:`Parent props <parent-props.example.yaml>`
-* :download:`Nested props <nested-props.example.yaml>`
-* :download:`Nested props skipping nodes <nested-props-skipping-nodes.example.yaml>`
-* :download:`Aggregated props <aggregated-props.example.yaml>`
-* :download:`Injecting props <injecting-props.example.yaml>`
-* :download:`Joining props <joining-props.example.yaml>`
-* :download:`Subject-file manifest <subject-file-manifest.example.yaml>`
+* ``Gen3 Forum September 2025 - ETL.pdf`` in the
+  ``docs/source/datacommons/extra-material`` directory.
+* :download:`Generic ETL mapping reference <manifest/etlMapping.example.yaml>`
+* :download:`Flatten props, one-to-one <manifest/flatten-props-one-to-one.example.yaml>`
+* :download:`Flatten props, many-to-one <manifest/flatten-props-many-to-star.example.yaml>`
+* :download:`Parent props <manifest/parent-props.example.yaml>`
+* :download:`Nested props <manifest/nested-props.example.yaml>`
+* :download:`Nested props skipping nodes <manifest/nested-props-skipping-nodes.example.yaml>`
+* :download:`Aggregated props <manifest/aggregated-props.example.yaml>`
+* :download:`Injecting props <manifest/injecting-props.example.yaml>`
+* :download:`Joining props <manifest/joining-props.example.yaml>`
+* :download:`Subject-file manifest <manifest/subject-file-manifest.example.yaml>`

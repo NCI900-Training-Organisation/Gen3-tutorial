@@ -56,7 +56,7 @@ ETL mapping Syntax
 
 
 The generic syntax reference is available in
-[`etlMapping.example.yaml`](etlMapping.example.yaml). It shows the fields that an ETL mapping can hold.
+[`etlMapping.example.yaml`](manifest/etlMapping.example.yaml). It shows the fields that an ETL mapping can hold.
 
 - name: Name the index will have in elastic search
 - doc_type: Name guppy will use for queryinh the index
@@ -106,7 +106,7 @@ Creating a mapping
 ![ETL mapping](images/17-flatten-props-one-to-one.png)
 
 The mapping shown in the image is also available as
-[`flatten-props-one-to-one.example.yaml`](flatten-props-one-to-one.example.yaml):
+[`flatten-props-one-to-one.example.yaml`](manifest/flatten-props-one-to-one.example.yaml):
 
 ```yaml
 mappings:
@@ -147,7 +147,7 @@ Example Index:
 
 ![ETL mapping](images/18-flatten-props-many-to-star.png)
 
-[`flatten-props-many-to-star.example.yaml`](flatten-props-many-to-star.example.yaml):
+[`flatten-props-many-to-star.example.yaml`](manifest/flatten-props-many-to-star.example.yaml):
 
 ```yaml
 mappings:
@@ -180,7 +180,7 @@ Parent props:
 ![ETL mapping](images/19-parent-props.png)
 
 The parent-props mapping is also available as
-[`parent-props.example.yaml`](parent-props.example.yaml):
+[`parent-props.example.yaml`](manifest/parent-props.example.yaml):
 
 ```yaml
 mappings:
@@ -209,7 +209,7 @@ Example Index:
 ![ETL mapping](images/20-nested-props.png)
 
 The nested-props mapping is also available as
-[`nested-props.example.yaml`](nested-props.example.yaml):
+[`nested-props.example.yaml`](manifest/nested-props.example.yaml):
 
 ```yaml
 mappings:
@@ -266,7 +266,7 @@ Example nested index shape:
 ![Nested props skipping nodes](images/21-nested-props-skipping-nodes.png)
 
 The skipping-nodes mapping is also available as
-[`nested-props-skipping-nodes.example.yaml`](nested-props-skipping-nodes.example.yaml):
+[`nested-props-skipping-nodes.example.yaml`](manifest/nested-props-skipping-nodes.example.yaml):
 
 ```yaml
 mappings:
@@ -298,7 +298,7 @@ its `data_file_image` child nodes.
 
 
 The aggregated-props mapping is also available as
-[`aggregated-props.example.yaml`](aggregated-props.example.yaml):
+[`aggregated-props.example.yaml`](manifest/aggregated-props.example.yaml):
 
 ```yaml
 mappings:
@@ -341,7 +341,7 @@ Example Index:
 - fn:set
 
 The injecting-props mapping is also available as
-[`injecting-props.example.yaml`](injecting-props.example.yaml):
+[`injecting-props.example.yaml`](manifest/injecting-props.example.yaml):
 
 ```yaml
 mappings:
@@ -381,7 +381,7 @@ Example Index: data files with injected subject IDs
 ![Joining props](images/25-joining-props.png)
 
 The joining-props mappings are also available as
-[`joining-props.example.yaml`](joining-props.example.yaml):
+[`joining-props.example.yaml`](manifest/joining-props.example.yaml):
 
 ```yaml
 mappings:
@@ -445,7 +445,7 @@ Putting this together
 ![Subject file manifest mapping](images/27-subject-file-manifest-mapping.png)
 
 The complete subject-file manifest mapping is also available as
-[`subject-file-manifest.example.yaml`](subject-file-manifest.example.yaml):
+[`subject-file-manifest.example.yaml`](manifest/subject-file-manifest.example.yaml):
 
 ```yaml
 mappings:
