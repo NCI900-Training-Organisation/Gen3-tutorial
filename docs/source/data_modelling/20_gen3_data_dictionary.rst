@@ -1,5 +1,5 @@
-GEN3 Data Dictionary
-====================
+Data Dictionary Overview
+==============================
 
 GEN3 uses a graph model to represent the data model.
 

@@ -1,4 +1,4 @@
-Set Up Gen3SchemaDev
+Setup Gen3SchemaDev
 ====================
 
 These instructions assume that you are using macOS with Homebrew installed
