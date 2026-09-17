@@ -5,7 +5,7 @@ nodes:
     category: administrative
     description: "Program node"
     properties:
-      - name: db_gap_accession_number
+      - name: dbgap_accession_number
         description: "The dbgap accession number provided for the program."
         type: string
   - name: project
