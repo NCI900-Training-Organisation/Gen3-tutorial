@@ -6,9 +6,11 @@ The input file is stored at ``sample-data-dict/input.yaml``. To generate the dat
 
 .. code-block:: bash
 
-	mkdir -p output_schema
+	cd sample-data-dict
+	
+	mkdir -p output-schema
 
-	gen3schemadev generate -i input.yaml -o output_schema
+	gen3schemadev generate -i input.yaml -o output-schema
 
 
 
@@ -16,23 +18,23 @@ Validate the generated schemas before bundling them:
 
 .. code-block:: bash
 
-	gen3schemadev validate -y output_schema
+	gen3schemadev validate -y output-schema
 
 Fix validation errors in ``input.yaml``, remove or regenerate the generated output if necessary, and run the generation and validation commands again.
 Now the individual node schemas can be combined into one JSON file. Create a directory for JSON output and write the bundle there:
 
 .. code-block:: bash
 
-	mkdir -p output_json
+	mkdir -p output-json
 
-	gen3schemadev bundle -i output_schema -f output_json/bundled_schema.json
+	gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
 
-The resulting ``output_json/bundled_schema.json`` contains the schemas needed to represent the complete data dictionary.
+The resulting ``output-json/bundled-schema.json`` contains the schemas needed to represent the complete data dictionary.
 Then generate a visual representation from the bundled schema:
 
 .. code-block:: bash
 
-	gen3schemadev visualise -i output_json/bundled_schema.json
+	gen3schemadev visualise -i output-json/bundled-schema.json
 
 You should be able to see the visual representation of the data dictionary in your browser. 
 
@@ -59,13 +61,13 @@ From ``sample-data-dict``, the complete workflow is:
 
 .. code-block:: bash
 
-	mkdir -p output_schema output-json
+	mkdir -p output-schema output-json
 
 	gen3schemadev generate -i input.yaml -o output-schema
 
 	gen3schemadev validate -y output-schema
 
-	gen3schemadev bundle -i output_schema -f output-json/bundled-schema.json
+	gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
 
 	gen3schemadev visualise -i output-json/bundled-schema.json
 
