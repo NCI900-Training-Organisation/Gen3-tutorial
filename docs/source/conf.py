@@ -2,12 +2,12 @@
 
 # -- Project information
 
-project = "Kubernetes Training"
+project = "GEN Tutorial"
 copyright = "2026, National Computational Infrastructure"
 author = "NCI Training"
 
-release = "0.1"
-version = "0.1.0"
+release = "2026.09"
+version = "2026.09.1"
 
 # -- General configuration
 
@@ -36,7 +36,7 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_theme_options = {
     "path_to_docs": "docs/source",
-    "repository_url": "https://github.com/josephjohnjj/kubernetes-training",
+    "repository_url": "https://github.com/NCI900-Training-Organisation/Gen3-tutorial.git",
     "use_repository_button": True,
     "home_page_in_toc": True,
     "back_to_top_button": True,

@@ -10,5 +10,5 @@ Contents
    :maxdepth: 2
    :caption: Documentation
 
-   datacommons/index
+    data_modelling/index.rst
  
