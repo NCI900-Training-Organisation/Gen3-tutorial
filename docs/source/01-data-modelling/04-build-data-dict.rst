@@ -28,7 +28,7 @@ Now the individual node schemas can be combined into one JSON file. Create a dir
 	gen3schemadev bundle -i output_schema -f output_json/bundled_schema.json
 
 The resulting ``output_json/bundled_schema.json`` contains the schemas needed to represent the complete data dictionary.
-Then geenerate a visual representation from the bundled schema:
+Then generate a visual representation from the bundled schema:
 
 .. code-block:: console
 

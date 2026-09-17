@@ -43,7 +43,7 @@ is used as the data dictionary for a given gen3 instance. Schemas are generally 
 
 .. note::
 
-    Mental model for GEN3 dictionay Vs generic datamodel:
+    Mental model for GEN3 dictionary Vs generic datamodel:
 
     * schema = node = entity  
 
@@ -100,7 +100,7 @@ Next we will define the `nodes` in our data dictionary. In our example we have t
       - name: dna
       - name: seqrun
 
-Then we add node catogories to the data dictionary. Each node must have a category. The category is used to classify the node into a specific type. 
+Then we add node categories to the data dictionary. Each node must have a category. The category is used to classify the node into a specific type.
 The categories are:
 
 * administrative
@@ -147,7 +147,7 @@ The categories are:
         category: data_file
 
 
-Then we add discription to each node in the data dictionary.
+Then we add description to each node in the data dictionary.
 
 .. code-block:: yaml
 
@@ -260,7 +260,7 @@ Now we add the properties of each node in the data dictionary.
         category: data_file
         description: "Sequencing run node"
         properties:
-          - name: seqrum_id
+          - name: seqrun_id
             description: "The sequencing run ID."
             type: string
           - name: dna_id
@@ -391,7 +391,7 @@ Then we add the links between the nodes in the data dictionary.
         category: data_file
         description: "Sequencing run node"
         properties:
-          - name: seqrum_id
+          - name: seqrun_id
             description: "The sequencing run ID."
             type: string
           - name: dna_id
@@ -540,7 +540,7 @@ So the final input_yaml file for our example data model looks like this:
         category: data_file
         description: "Sequencing run node"
         properties:
-          - name: seqrum_id
+          - name: seqrun_id
             description: "The sequencing run ID."
             type: string
           - name: dna_id

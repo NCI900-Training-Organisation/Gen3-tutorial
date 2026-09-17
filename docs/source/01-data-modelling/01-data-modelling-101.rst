@@ -3,7 +3,7 @@ Data Modelling 101
 
 
 Data modeling is the act of exploring data-oriented structures. 
-It is conceptually similar to class modeling in object orriented programming. 
+It is conceptually similar to class modeling in object oriented programming.
 
 * With data modeling you identify `entity types` whereas with class modeling you `identify classes`. 
 
@@ -61,7 +61,7 @@ Identify Entity Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An entity type (or entities ) is 
-* conecptually similar to a class in object oriented programming.
+* conceptually similar to a class in object oriented programming.
 *  represents a collection of similar objects.
 * depicts a single conceptual object in the real world.
 
@@ -87,7 +87,7 @@ In our example the attributes will be:
 * Urine: urine_id, patient_id
 * Plasma: plasma_id, blood_id
 * DNA: dna_id, blood_id, dna_specimen_id
-* Seqrum: seqrum_id, dna_id
+* SeqRun: seqrun_id, dna_id
 
 
 Identify Relationships
@@ -105,7 +105,7 @@ Identify Relationships
         #. Patient to Urine: One to Many
         #. Blood to Plasma: One to One
         #. Blood to DNA: One to One
-        #. DNA to Seqrum: Many to One
+        #. DNA to SeqRun: Many to One
 
 Assign Keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +125,7 @@ In our example, the primary keys for each entity are:
 - `Urine`: `urine_id`
 - `Plasma`: `plasma_id`
 - `DNA`: `dna_id`
-- `Seqrum`: `seqrum_id`
+- `SeqRun`: `seqrun_id`
 
 **Foreign Key**: A foreign key is an attribute in one table that references the primary key of another table.
 It is used to link related records across entities.
@@ -136,7 +136,7 @@ In our example, the foreign keys are:
 - `Urine.patient_id` is a foreign key to `Patient.patient_id`
 - `Plasma.blood_id` is a foreign key to `Blood.blood_id`
 - `DNA.blood_id` is a foreign key to `Blood.blood_id`
-- `Seqrum.dna_id` is a foreign key to `DNA.dna_id`
+- `SeqRun.dna_id` is a foreign key to `DNA.dna_id`
 
 Entity-by-entity key summary:
 
@@ -154,7 +154,7 @@ Entity-by-entity key summary:
 +-----------+----------------------+-----------------------+-------------------------------------------+
 | DNA       | dna_id, blood_id     | dna_id               | blood_id -> Blood.blood_id                |
 +-----------+----------------------+-----------------------+-------------------------------------------+
-| Seqrum    | seqrum_id, dna_id    | seqrum_id            | dna_id -> DNA.dna_id                      |
+| SeqRun    | seqrun_id, dna_id    | seqrun_id            | dna_id -> DNA.dna_id                      |
 +-----------+----------------------+-----------------------+-------------------------------------------+
 
 This example shows how identifiers allow us to distinguish each record and enforce relationships between related data.
