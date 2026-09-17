@@ -1,0 +1,42 @@
+$schema: http://json-schema.org/draft-04/schema#
+id: plasma
+title: plasma
+type: object
+namespace: https://link-to-data-portal/
+category: biospecimen
+program: '*'
+project: '*'
+description: Plasma sample node
+submittable: true
+validators: null
+systemProperties:
+- id
+- project_id
+- state
+- created_datetime
+- updated_datetime
+uniqueKeys:
+- - id
+- - project_id
+  - submitter_id
+required:
+- submitter_id
+- type
+links:
+- name: bloods
+  backref: plasmas
+  label: part_of
+  target_type: blood
+  multiplicity: one_to_one
+  required: true
+properties:
+  $ref: _definitions.yaml#/ubiquitous_properties
+  plasma_id:
+    type: string
+    description: The plasma sample ID.
+  blood_id:
+    type: string
+    description: The blood sample ID.
+  bloods:
+    $ref: _definitions.yaml#/to_one
+additionalProperties: false

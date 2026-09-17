@@ -1,0 +1,103 @@
+version: 0.1.0
+url: https://link-to-data-portal
+nodes:
+  - name: program
+    category: administrative
+    description: "Program node"
+    properties:
+      - name: db_gap_accession_number
+        description: "The dbgap accession number provided for the program."
+        type: string
+  - name: project
+    category: administrative
+    description: "Project node"
+    properties:
+      - name: project_id
+        description: "The project ID."
+        type: string
+  - name: patient
+    category: clinical
+    description: "Patient node"
+    properties:
+      - name: patient_id
+        description: "The patient ID."
+        type: string
+  - name: blood
+    category: biospecimen
+    description: "Blood sample node"
+    properties:
+      - name: blood_id
+        description: "The blood sample ID."
+        type: string
+      - name: patient_id
+        description: "The patient ID."
+        type: string
+      - name: blood_type
+        description: "The blood type."
+        type: string
+  - name: urine
+    category: biospecimen
+    description: "Urine sample node"
+    properties:
+      - name: urine_id
+        description: "The urine sample ID."
+        type: string
+      - name: patient_id
+        description: "The patient ID."
+        type: string
+  - name: plasma
+    category: biospecimen
+    description: "Plasma sample node"
+    properties:
+      - name: plasma_id
+        description: "The plasma sample ID."
+        type: string
+      - name: blood_id
+        description: "The blood sample ID."
+        type: string
+  - name: dna
+    category: biospecimen
+    description: "DNA specimen node"
+    properties:
+      - name: dna_id
+        description: "The DNA ID."
+        type: string
+      - name: blood_id
+        description: "The blood sample ID."
+        type: string
+      - name: dna_specimen_id
+        description: "The DNA specimen ID."
+        type: string
+  - name: seqrun
+    category: data_file
+    description: "Sequencing run node"
+    properties:
+      - name: seqrun_id
+        description: "The sequencing run ID."
+        type: string
+      - name: dna_id
+        description: "The DNA ID."
+        type: string
+links:
+  - parent: program
+    multiplicity: one_to_many
+    child: project
+  - parent: project
+    multiplicity: one_to_many
+    child: patient
+  - parent: patient
+    multiplicity: one_to_many
+    child: blood
+  - parent: patient
+    multiplicity: one_to_many
+    child: urine
+    required: false
+  - parent: blood
+    multiplicity: one_to_one
+    child: plasma
+  - parent: blood
+    multiplicity: one_to_one
+    child: dna
+  - parent: dna
+    multiplicity: many_to_one
+    child: seqrun
