@@ -10,5 +10,5 @@ Contents
    :maxdepth: 2
    :caption: Documentation
 
-    data_modelling/index.rst
+   data_modelling/index.rst
  
