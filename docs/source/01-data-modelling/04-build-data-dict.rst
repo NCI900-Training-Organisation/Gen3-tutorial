@@ -4,7 +4,7 @@ Build data dictionary
 
 The input file is stored at ``sample-data-dict/input.yaml``. To generate the data dictionary, run the following commands from the ``sample-data-dict`` directory:
 
-.. code-block:: console
+.. code-block:: bash
 
 	mkdir -p output_schema
 
@@ -14,14 +14,14 @@ The input file is stored at ``sample-data-dict/input.yaml``. To generate the dat
 
 Validate the generated schemas before bundling them:
 
-.. code-block:: console
+.. code-block:: bash
 
 	gen3schemadev validate -y output_schema
 
 Fix validation errors in ``input.yaml``, remove or regenerate the generated output if necessary, and run the generation and validation commands again.
 Now the individual node schemas can be combined into one JSON file. Create a directory for JSON output and write the bundle there:
 
-.. code-block:: console
+.. code-block:: bash
 
 	mkdir -p output_json
 
@@ -30,7 +30,7 @@ Now the individual node schemas can be combined into one JSON file. Create a dir
 The resulting ``output_json/bundled_schema.json`` contains the schemas needed to represent the complete data dictionary.
 Then generate a visual representation from the bundled schema:
 
-.. code-block:: console
+.. code-block:: bash
 
 	gen3schemadev visualise -i output_json/bundled_schema.json
 
@@ -57,7 +57,7 @@ Complete workflow
 
 From ``sample-data-dict``, the complete workflow is:
 
-.. code-block:: console
+.. code-block:: bash
 
 	mkdir -p output_schema output-json
 
