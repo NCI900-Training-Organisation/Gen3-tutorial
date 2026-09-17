@@ -11,24 +11,28 @@ Install Python
 Before installing Python with pyenv, ensure that the full Xcode toolchain is available on macOS. Without it, pyenv can use the Homebrew LLVM compiler instead of the Apple/Xcode toolchain, and the build can fail during configuration.
 
 
-For mac, Install Xcode from the App Store, then select it:
+.. note::
 
-.. code-block:: bash
+   For mac, Install Xcode from the App Store, then select it:
 
-   sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-   xcodebuild -version
+   .. code-block:: bash
 
-If the build still prefers the Homebrew clang, force the Xcode toolchain for the current shell before running pyenv:
+      sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+      xcodebuild -version
 
-.. code-block:: bash
+   If the build still prefers the Homebrew clang, force the Xcode toolchain for the current shell before running pyenv:
 
-   export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-   export CC="$(xcrun --find clang)"
-   export CXX="$(xcrun --find clang++)"
-   export SDKROOT="$(xcrun --show-sdk-path)"
-   export CPPFLAGS="-isysroot $SDKROOT"
-   export CFLAGS="-isysroot $SDKROOT"
-   export LDFLAGS="-isysroot $SDKROOT"
+   .. code-block:: bash
+
+      export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+      export CC="$(xcrun --find clang)"
+      export CXX="$(xcrun --find clang++)"
+      export SDKROOT="$(xcrun --show-sdk-path)"
+      export CPPFLAGS="-isysroot $SDKROOT"
+      export CFLAGS="-isysroot $SDKROOT"
+      export LDFLAGS="-isysroot $SDKROOT"
+
+   For Windows it is recommend to install the linux subsystem.
 
 Install pyenv:
 
