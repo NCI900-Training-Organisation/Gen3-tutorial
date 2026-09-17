@@ -11,4 +11,14 @@ Contents
    :maxdepth: 2
 
    data_modelling/index.rst
+
+
+References
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   references
  
