@@ -39,14 +39,17 @@ You should be able to see the visual representation of the data dictionary in yo
 .. image:: images/graph_view.png
    :alt: Graph view of the data dictionary showing nodes and links
    :align: center
+	:class: image-spaced
 
 .. image:: images/properties.png
    :alt: Properties view of the data dictionary showing node properties and their attributes
    :align: center
+	:class: image-spaced
 
 .. image:: images/prop_details.png
    :alt: Details of the properties of the `Patient` node in the data dictionary.
    :align: center
+	:class: image-spaced
 
 
 Complete workflow
