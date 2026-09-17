@@ -3,11 +3,15 @@ Data Modelling 101
 
 
 Data modeling is the act of exploring data-oriented structures. 
-Data modeling is conceptually similar to class modeling in object orriented programming. 
-    - With data modeling you identify `entity types` whereas with class modeling you `identify classes`. 
-    - `Data attributes` are assigned to `entity types` just as you would assign `attributes` and `operations` to `classes`. 
-    - There are associations between entities, similar to the associations between classes 
-    - Just like in classes relationships, inheritance, composition, and aggregation are all applicable concepts in data modeling
+It is conceptually similar to class modeling in object orriented programming. 
+
+* With data modeling you identify `entity types` whereas with class modeling you `identify classes`. 
+
+* `Data attributes` are assigned to `entity types` just as you would assign `attributes` and `operations` to `classes`. 
+
+* There are associations between entities, similar to the associations between classes.
+
+* Just like in classes relationships, inheritance, composition, and aggregation are all applicable concepts in data modeling.
 
 .. note::
 
@@ -16,7 +20,7 @@ Data modeling is conceptually similar to class modeling in object orriented prog
 
 
 
-Commond Modelling Notation
+Common Modelling Notations
 -------------------------
 
 
@@ -40,19 +44,26 @@ How to Model Data
 -----------------
 
 Suppose we are designing an experiment that collects data from a patient.
-From the patient, we collect blood and urine samples.
-From the blood, we extract plasma and DNA.
-From the DNA, we generate a sequencing run.
+* From the patient, we collect blood and urine samples.
+* From the blood, we extract plasma and DNA.
+* From the DNA, we generate a sequencing run.
 
 We will use the following steps to model this data. 
 
-
 1. Identify Entity Types
+2. Identify Attributes
+3. Identify Relationships
+4. Assign Keys
+5. Data Normalization
+
+
+Identify Entity Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    - Conecptually similar to a class in object oriented programming
-    - An entity type represents a collection of similar objects
-    - An entity depics a single conceptual object in the real world
+An entity type (or entities ) is 
+* conecptually similar to a class in object oriented programming.
+*  represents a collection of similar objects.
+* depicts a single conceptual object in the real world.
 
 In our example the entities will be: 
     - Patient 
@@ -62,52 +73,52 @@ In our example the entities will be:
     - DNA
     - Serum
 
-2. Identify Attributes
+Identify Attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    - Each entity has 1+ attributes
-    - An attribute is a property or characteristic of an entity type
-    - An attribute describes a single aspect of an entity type
-    - An attribute has a name and a data type
+* Each entity has 1+ attributes.
+* An attribute is a property or characteristic of an entity type.
+* An attribute describes a single aspect of an entity type.
+* An attribute has a name and a data type.
 
 In our example the attributes will be:
-    - Patient: patient_id
-    - Blood: blood_id, patient_id, blood_type
-    - Urine: urine_id, patient_id
-    - Plasma: plasma_id, blood_id
-    - DNA: dna_id, blood_id, dna_specimen_id
-    - Seqrum: seqrum_id, dna_id
+* Patient: patient_id
+* Blood: blood_id, patient_id, blood_type
+* Urine: urine_id, patient_id
+* Plasma: plasma_id, blood_id
+* DNA: dna_id, blood_id, dna_specimen_id
+* Seqrum: seqrum_id, dna_id
 
 
-3. Identify Relationships
+Identify Relationships
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    - Entities are related to each other through relationships
-    - It is similar to the concept of associations in object oriented programming
-    - Once relationships are identified, we can determine the `cardinality` and `optionality` of the relationship
-        * Cardinality: The number of instances of one entity that can be associated with instances of another entity
-            - One to One
-            - One to Many
-            - Many to Many
-            - In our example the relationships will be:
-                * Patient to Blood: One to Many
-                * Patient to Urine: One to Many
-                * Blood to Plasma: One to One
-                * Blood to DNA: One to One
-                * DNA to Seqrum: Many to One
+* Entities are related to each other through relationships.
+* It is similar to the concept of associations in object oriented programming.
+* Once relationships are identified, we can determine the `cardinality`.
+* Cardinality: The number of instances of one entity that can be associated with instances of another entity
+    - One to One
+    - One to Many
+    - Many to Many
+    - In our example the relationships will be:
+        #. Patient to Blood: One to Many
+        #. Patient to Urine: One to Many
+        #. Blood to Plasma: One to One
+        #. Blood to DNA: One to One
+        #. DNA to Seqrum: Many to One
 
-4. Assign Keys
+Assign Keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A key is an attribute or set of attributes used to uniquely identify records and define relationships between entities.
 
-1. **Candidate Key**: A candidate key is any column or combination of columns that could uniquely identify a row in a table.
+**Candidate Key**: A candidate key is any column or combination of columns that could uniquely identify a row in a table.
 For example, in the `Patient` table, `patient_id` is a natural candidate key because it uniquely identifies each patient.
 
-2. **Primary Key**: The primary key is the **chosen** candidate key that becomes the main identifier for the table.
+**Primary Key**: The primary key is the **chosen** candidate key that becomes the main identifier for the table.
 It must be unique and not null.
 
-Examples in this model:
+In our example, the primary keys for each entity are:
 
 - `Patient`: `patient_id`
 - `Blood`: `blood_id`
@@ -116,10 +127,10 @@ Examples in this model:
 - `DNA`: `dna_id`
 - `Seqrum`: `seqrum_id`
 
-3. **Foreign Key**: A foreign key is an attribute in one table that references the primary key of another table.
+**Foreign Key**: A foreign key is an attribute in one table that references the primary key of another table.
 It is used to link related records across entities.
 
-In this model:
+In our example, the foreign keys are:
 
 - `Blood.patient_id` is a foreign key to `Patient.patient_id`
 - `Urine.patient_id` is a foreign key to `Patient.patient_id`
@@ -148,7 +159,7 @@ Entity-by-entity key summary:
 
 This example shows how identifiers allow us to distinguish each record and enforce relationships between related data.
 
-5. Data Normalization
+Data Normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Data normalization is the process of organizing data to minimize (or eliminate) redundancy and improve data integrity.
@@ -156,7 +167,7 @@ This example shows how identifiers allow us to distinguish each record and enfor
 
 Using the patient study example:
 
-1. First normal form (1NF): An entity is in 1NF when it has no repeating groups of data and each field contains a single value.
+**First normal form (1NF)**: An entity is in 1NF when it has no repeating groups of data and each field contains a single value.
 
 For example, in the `Blood` table, each row should represent one blood sample only.
 We should not store multiple blood samples in a single row such as:
@@ -168,7 +179,7 @@ We should not store multiple blood samples in a single row such as:
 Instead, each row should contain one value per attribute, and each record should be stored separately.
 This ensures that each blood sample has one `blood_id`, one `patient_id`, and one `blood_type` value.
 
-2. Second normal form (2NF): A table is in 2NF when it is already in 1NF and every non-key attribute is fully dependent on the whole primary key.
+**Second normal form (2NF)**: A table is in 2NF when it is already in 1NF and every non-key attribute is fully dependent on the whole primary key.
 
 In our example, the `DNA` table has a primary key like `dna_id`.
 If we store `blood_id`, `dna_specimen_id`, and `patient_id` in the same table, then `patient_id` is not directly dependent on `dna_id` alone; it depends on the blood sample that the DNA came from.
@@ -181,7 +192,7 @@ This means the relation should be split so that:
 
 This avoids duplication and ensures that each attribute belongs to the correct entity.
 
-3. Third normal form (3NF): A table is in 3NF when it is in 2NF and no non-key attribute depends on another non-key attribute.
+**Third normal form (3NF)**: A table is in 3NF when it is in 2NF and no non-key attribute depends on another non-key attribute.
 
 For example, suppose we stored `patient_name` in the `Blood` table.
 That would be a problem because `patient_name` depends on `patient_id`, not directly on `blood_id`.
@@ -209,8 +220,7 @@ They help to illustrate how data is structured and how different entities intera
    :alt: Entity relationship diagram showing patient, blood, urine, plasma, DNA, and sequencing run entities
    :align: center
 
-Different aspects of the ER diagram
------------------------------------
+
 
 - `Entities`: The boxes represent entity types such as `Patient`, `Blood`, `Urine`, `Plasma`, `DNA`, and `SeqRun`.
 - `Attributes`: Each entity contains its own characteristics, such as `patient_id`, `blood_id`, `dna_id`, and `run_date`.

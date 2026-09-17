@@ -10,7 +10,8 @@ Install Python
 
 Before installing Python with pyenv, ensure that the full Xcode toolchain is available on macOS. Without it, pyenv can use the Homebrew LLVM compiler instead of the Apple/Xcode toolchain, and the build can fail during configuration.
 
-Install Xcode from the App Store, then select it:
+
+For mac, Install Xcode from the App Store, then select it:
 
 .. code-block:: bash
 
@@ -82,31 +83,3 @@ For subsequent sessions, activate the environment again from the same directory:
 
    source .venv/bin/activate
 
-Alternative: install from source with Poetry
---------------------------------------------
-
-Use this option when working on Gen3SchemaDev itself. Run ``poetry install``
-inside the cloned repository, which contains its ``pyproject.toml`` file.
-This follows the project's
-`development installation workflow <https://github.com/AustralianBioCommons/gen3schemadev#for-developers>`_.
-
-In a fresh terminal, run:
-
-.. code-block:: bash
-
-   brew install poetry
-
-   git clone https://github.com/AustralianBioCommons/gen3schemadev.git
-   cd gen3schemadev
-
-   pyenv local 3.13.15
-   poetry env use "$(pyenv which python)"
-   poetry install
-   poetry run gen3schemadev --version
-
-If you prefer to activate Poetry's environment, run:
-
-.. code-block:: bash
-
-   source "$(poetry env info --path)/bin/activate"
-   gen3schemadev --version
