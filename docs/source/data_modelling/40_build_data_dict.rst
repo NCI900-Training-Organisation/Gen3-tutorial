@@ -1,5 +1,5 @@
 
-Build a Gen3 data dictionary
+Build a GEN3 data dictionary
 ============================
 
 The input file is stored at ``sample-data-dict/input.yaml``. To generate the data dictionary, run the following commands from the ``sample-data-dict`` directory:
