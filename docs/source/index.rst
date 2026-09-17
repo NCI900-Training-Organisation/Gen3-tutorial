@@ -10,7 +10,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   data_modelling/index.rst
+   01-data-modelling/index.rst
 
 
 References

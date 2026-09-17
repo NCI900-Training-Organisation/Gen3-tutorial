@@ -36,17 +36,17 @@ Then geenerate a visual representation from the bundled schema:
 
 You should be able to see the visual representation of the data dictionary in your browser. 
 
-.. image:: images/graph_view.png
+.. image:: images/03-graph-view.png
    :alt: Graph view of the data dictionary showing nodes and links
    :align: center
 	:class: image-spaced
 
-.. image:: images/properties.png
+.. image:: images/04-properties.png
    :alt: Properties view of the data dictionary showing node properties and their attributes
    :align: center
 	:class: image-spaced
 
-.. image:: images/prop_details.png
+.. image:: images/05-property-details.png
    :alt: Details of the properties of the `Patient` node in the data dictionary.
    :align: center
 	:class: image-spaced
@@ -59,15 +59,15 @@ From ``sample-data-dict``, the complete workflow is:
 
 .. code-block:: console
 
-	mkdir -p output_schema output_json
+	mkdir -p output_schema output-json
 
-	gen3schemadev generate -i input.yaml -o output_schema
+	gen3schemadev generate -i input.yaml -o output-schema
 
-	gen3schemadev validate -y output_schema
+	gen3schemadev validate -y output-schema
 
-	gen3schemadev bundle -i output_schema -f output_json/bundled_schema.json
+	gen3schemadev bundle -i output_schema -f output-json/bundled-schema.json
 
-	gen3schemadev visualise -i output_json/bundled_schema.json
+	gen3schemadev visualise -i output-json/bundled-schema.json
 
 After changing ``input.yaml``, repeat the workflow so that the generated schemas and bundled JSON reflect the updated data model.
 

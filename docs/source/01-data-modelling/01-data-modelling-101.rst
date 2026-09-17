@@ -24,7 +24,7 @@ Common Modelling Notations
 -------------------------
 
 
-.. image:: images/notations.png
+.. image:: images/01-notations.png
    :alt: Data modeling overview screenshot
    :align: center
 
@@ -216,7 +216,7 @@ ER diagrams are a visual representation of the relationships between entities in
 They help to illustrate how data is structured and how different entities interact with each other.
 
 
-.. image:: images/ER.png
+.. image:: images/02-er-diagram.png
    :alt: Entity relationship diagram showing patient, blood, urine, plasma, DNA, and sequencing run entities
    :align: center
 

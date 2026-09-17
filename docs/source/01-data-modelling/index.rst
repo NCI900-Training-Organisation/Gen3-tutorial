@@ -6,7 +6,7 @@ Learn about data modelling and how to prepare data for search and exploration in
 .. toctree::
    :maxdepth: 2
 
-   10_data_modelling_101.rst
-   20_gen3_data_dictionary.rst
-   30_setup_Gen3SchemaDev.rst
-   40_build_data_dict.rst
+   01-data-modelling-101.rst
+   02-data-dictionary.rst
+   03-setup-Gen3SchemaDev.rst
+   04-build-data-dict.rst
