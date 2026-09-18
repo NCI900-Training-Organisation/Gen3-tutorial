@@ -1,4 +1,4 @@
-Introduction to Gen3
+GEN3 Overview
 ====================
 
 Gen3 is an open-source platform for building data commons, data meshes, data
