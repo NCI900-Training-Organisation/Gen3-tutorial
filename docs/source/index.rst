@@ -8,7 +8,7 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    03-gen3-components/index.rst
    01-data-modelling/index.rst
