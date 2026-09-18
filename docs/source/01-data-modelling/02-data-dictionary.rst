@@ -59,7 +59,7 @@ example data model.
 
 
 
-`Gen3SchemaDev` provides a high level input_yaml file where you can define the major components of your data model- `input.yaml`. 
+`Gen3SchemaDev` requires a high level YAML file where you can define the major components of your data model- ``input.yaml``. 
 This file abstracts away some of the complexity and formatting needed for creating gen3 schemas.
 
 
@@ -69,7 +69,7 @@ In this file you can define the major components of your data model, including:
 - links
 - properties
 
-First lets start by adding a version and url to the input_yaml file.
+First lets start by adding a version and url to the ``input.yaml`` file.
 
 .. code-block:: yaml
 
@@ -452,7 +452,7 @@ or a urine sample, but not necessarily both, we can make the link from patient t
         child: seqrun
 
 
-So the final input_yaml file for our example data model looks like this:
+So the final ``input.yaml`` file for our example data model looks like this:
 
 .. code-block:: yaml
 
