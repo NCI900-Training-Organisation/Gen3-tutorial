@@ -47,9 +47,12 @@ We will use the following steps to model this data.
 Identify Entity Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-An entity type (or entities ) is 
+An entity type (or entities ) is:
+
 * conceptually similar to a class in object oriented programming.
+
 * represents a collection of similar objects.
+
 * depicts a single conceptual object in the real world.
 
 In our example the entities will be: 
@@ -69,11 +72,17 @@ Identify Attributes
 * An attribute has a name and a data type.
 
 In our example the attributes will be:
+
 * Patient: patient_id
+
 * Blood: blood_id, patient_id, blood_type
+
 * Urine: urine_id, patient_id
+
 * Plasma: plasma_id, blood_id
+
 * DNA: dna_id, blood_id, dna_specimen_id
+
 * SeqRun: seqrun_id, dna_id
 
 
