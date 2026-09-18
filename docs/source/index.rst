@@ -12,12 +12,4 @@ Contents
 
    03-gen3-components/index.rst
    01-data-modelling/index.rst
-
-References
-----------
-
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-
-   references
+   references.rst
