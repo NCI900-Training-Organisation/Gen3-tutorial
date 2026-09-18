@@ -1,7 +1,7 @@
 GEN3 Tutorial
 =============
 
-This repository provides an introductory tutorial on setting up infrastructure for GEN3 using OpenStack. 
+This repository provides an introductory tutorial on setting up infrastructure for GEN3 using OpenStack.
 It also provides an end-to-end tutorial on how to model data for GEN3 and curate it for different GEN3 components, including, but not limited to, Elasticsearch.
 
 Contents
@@ -10,17 +10,14 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-    03-gen3-components/index.rst
-    01-data-modelling/index.rst
-   
-
+   03-gen3-components/index.rst
+   01-data-modelling/index.rst
 
 References
--------------------
+----------
 
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
    references
- 

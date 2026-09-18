@@ -1,5 +1,5 @@
 Data Modelling in GEN3
-========================
+======================
 
 Learn about data modelling and how to prepare data for search and exploration in GEN3.
 
