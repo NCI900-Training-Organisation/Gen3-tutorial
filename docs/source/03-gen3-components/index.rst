@@ -1,4 +1,4 @@
-Gen3 Microservices
+GEN3 Microservices
 ===============
 
 .. toctree::
