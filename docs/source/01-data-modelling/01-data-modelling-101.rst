@@ -23,10 +23,17 @@ It is conceptually similar to class modelling in object oriented programming.
 How to Model Data
 -----------------
 
-Suppose we are designing an experiment that collects data from a patient.
-* From the patient, we collect blood and urine samples.
-* From the blood, we extract plasma and DNA.
-* From the DNA, we generate a sequencing run.
+
+.. admonition:: Example: from patient to sequencing run
+
+  Consider an experiment that follows biological material from a patient
+  through to sequencing:
+
+  * We collect blood and urine samples from the patient.
+
+  * We extract plasma and DNA from the blood.
+
+  * We generate a sequencing run from the DNA.
 
 We will use the following steps to model this data. 
 
