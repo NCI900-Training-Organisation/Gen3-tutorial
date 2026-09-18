@@ -61,14 +61,16 @@ Reload your shell configuration, install Python, and select it as your default:
    pyenv rehash
    python --version
 
-If your terminal prompt shows an active Conda environment such as ``(base)``,
-deactivate it before checking Python so that Conda does not override the pyenv
-shim:
+.. note::
 
-.. code-block:: bash
+   If your terminal prompt shows an active Conda environment such as ``(base)``,
+   deactivate it before checking Python so that Conda does not override the pyenv:
 
-   conda deactivate
-   python --version
+   .. code-block:: bash
+
+      conda deactivate
+      python --version
+
 
 Install Gen3SchemaDev for use
 -----------------------------
