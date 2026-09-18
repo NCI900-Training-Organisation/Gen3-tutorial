@@ -208,10 +208,6 @@ ER diagrams are a visual representation of the relationships between entities in
 They help to illustrate how data is structured and how different entities interact with each other.
 
 
-.. image:: images/02-er-diagram.png
-   :alt: Entity relationship diagram showing patient, blood, urine, plasma, DNA, and sequencing run entities
-   :align: center
-
 .. note::
 
     There are different types of notations available for an ER diagram. Here we are using Barker notation.
@@ -221,8 +217,7 @@ They help to illustrate how data is structured and how different entities intera
 Entities
 ~~~~~~~~~~~~~~~~
 
-An entity is drawn as a rounded rectangle, with its singular name at the top
-and its attributes inside. For example:
+An entity is drawn as a rounded rectangle, with its singular name at the top and its attributes inside. For example:
 
 .. code-block:: text
 
@@ -261,8 +256,7 @@ The symbol before an attribute describes its role:
 Relationships
 ~~~~~~~~~~~~~~~~
 
-A relationship is labelled with a meaningful phrase
-in each direction. Its notation describes both cardinality (one or many) and
+A relationship is labelled with a meaningful phrase in each direction. Its notation describes both cardinality (one or many) and
 optionality (whether participation is required).
 
 Cardinality
