@@ -8,10 +8,12 @@ installation or the source installation with Poetry.
 Install Python
 --------------
 
-Before installing Python with pyenv, ensure that the full Xcode toolchain is available on macOS. Without it, pyenv can use the Homebrew LLVM compiler instead of the Apple/Xcode toolchain, and the build can fail during configuration.
-
+In this tutorial we are using ``Python 3.13.15``.
 
 .. note::
+
+   In Mac ensure that the full Xcode toolchain is available. Without it, pyenv can use the Homebrew LLVM compiler instead of the Apple/Xcode 
+   toolchain, and the build can fail during configuration.
 
    For mac, Install Xcode from the App Store, then select it:
 
