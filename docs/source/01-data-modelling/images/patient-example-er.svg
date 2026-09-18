@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="940" viewBox="0 0 1080 940" role="img" aria-labelledby="title desc">
+<title id="title">Patient sample entity relationship diagram</title>
+<desc id="desc">Patient has many Blood and Urine records. Blood relates one-to-one to Plasma and DNA. Many DNA records relate to one SeqRun, following the stated relationship list.</desc>
+<rect width="1080" height="940" fill="#ffffff"/>
+<style>text{font-family:Arial,sans-serif;fill:#18334b}.heading{font-size:26px;font-weight:bold}.entity{font-size:19px;font-weight:bold}.attr{font-family:monospace;font-size:16px}.label{font-size:14px}.small{font-size:14px;fill:#526576}.edge{fill:none;stroke:#38566d;stroke-width:2.3}</style>
+<text x="40" y="42" class="heading">Patient sample model</text>
+<text x="40" y="70" class="small">Entities, attributes and cardinalities from the worked example</text>
+<path d="M520 203 V240 H270 V300" class="edge"/>
+<path d="M259 300 L270 280 L281 300" class="edge"/>
+<text x="357" y="229" class="label" text-anchor="middle">provides / belongs to</text>
+<text x="252" y="287" class="label" text-anchor="middle">N</text>
+<text x="504" y="223" class="label" text-anchor="middle">1</text>
+<path d="M560 203 V240 H830 V300" class="edge"/>
+<path d="M819 300 L830 280 L841 300" class="edge"/>
+<text x="736" y="229" class="label" text-anchor="middle">provides / belongs to</text>
+<text x="848" y="287" class="label" text-anchor="middle">N</text>
+<text x="578" y="223" class="label" text-anchor="middle">1</text>
+<path d="M250 449 V485 H190 V540" class="edge"/>
+<text x="122" y="481" class="label" text-anchor="middle">yields / comes from</text>
+<text x="234" y="470" class="label" text-anchor="middle">1</text>
+<text x="175" y="528" class="label" text-anchor="middle">1</text>
+<path d="M290 449 V485 H540 V540" class="edge"/>
+<text x="449" y="474" class="label" text-anchor="middle">yields / comes from</text>
+<text x="307" y="470" class="label" text-anchor="middle">1</text>
+<text x="524" y="528" class="label" text-anchor="middle">1</text>
+<path d="M540 689 V770" class="edge"/>
+<path d="M529 689 L540 709 L551 689" class="edge"/>
+<text x="692" y="730" class="label" text-anchor="middle">generates / generated from</text>
+<text x="521" y="712" class="label" text-anchor="middle">N</text>
+<text x="522" y="757" class="label" text-anchor="middle">1</text>
+<rect x="410" y="110" width="260" height="93" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="428" y="142" class="entity">PATIENT</text>
+<path d="M410 157 h260" stroke="#c0d1df"/>
+<text x="428" y="186" class="attr"># patient_id</text>
+<rect x="140" y="300" width="260" height="149" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="158" y="332" class="entity">BLOOD</text>
+<path d="M140 347 h260" stroke="#c0d1df"/>
+<text x="158" y="376" class="attr"># blood_id</text>
+<text x="158" y="404" class="attr">patient_id [FK]</text>
+<text x="158" y="432" class="attr">blood_type</text>
+<rect x="700" y="300" width="260" height="121" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="718" y="332" class="entity">URINE</text>
+<path d="M700 347 h260" stroke="#c0d1df"/>
+<text x="718" y="376" class="attr"># urine_id</text>
+<text x="718" y="404" class="attr">patient_id [FK]</text>
+<rect x="60" y="540" width="260" height="121" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="78" y="572" class="entity">PLASMA</text>
+<path d="M60 587 h260" stroke="#c0d1df"/>
+<text x="78" y="616" class="attr"># plasma_id</text>
+<text x="78" y="644" class="attr">blood_id [FK]</text>
+<rect x="410" y="540" width="260" height="149" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="428" y="572" class="entity">DNA</text>
+<path d="M410 587 h260" stroke="#c0d1df"/>
+<text x="428" y="616" class="attr"># dna_id</text>
+<text x="428" y="644" class="attr">blood_id [FK]</text>
+<text x="428" y="672" class="attr">dna_specimen_id</text>
+<rect x="410" y="770" width="260" height="121" rx="16" fill="#f4f8fc" stroke="#38566d" stroke-width="2"/>
+<text x="428" y="802" class="entity">SEQRUN</text>
+<path d="M410 817 h260" stroke="#c0d1df"/>
+<text x="428" y="846" class="attr"># seqrun_id</text>
+<text x="428" y="874" class="attr">dna_id [FK]</text>
+<text x="40" y="925" class="small"># unique identifier · [FK] foreign key · N many · Participation requirements are not specified.</text>
+</svg>

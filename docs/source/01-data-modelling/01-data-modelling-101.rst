@@ -20,26 +20,6 @@ It is conceptually similar to class modeling in object oriented programming.
 
 
 
-Common Modelling Notations
--------------------------
-
-
-.. image:: images/01-notations.png
-   :alt: Data modeling overview screenshot
-   :align: center
-
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Notation | Comments                                                                                                                                                                                                                                                                                                                                                                                  |
-+==========+==============================================================================================================================================================================================================================================================================================================================+
-| IE       | The IE notation (Finkelstein 1989) is simple and easy to read, and is well suited for high-level logical and enterprise data modeling. The only drawback of this notation, arguably an advantage, is that it does not support the identification of attributes of an entity. The assumption is that the attributes will be modeled with another diagram or simply described in the supporting documentation. |
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Barker   | The Barker notation is one of the more popular ones, it is supported by Oracle’s toolset, and is well suited for all types of data models. It's approach to subtyping can become clunky with hierarchies that go several levels deep.                                                                                          |
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| IDEF1X   | This notation is overly complex. It was originally intended for physical modeling but has been misapplied for logical modeling as well. Although popular within some U.S. government agencies, particularly the Department of Defense (DoD), this notation has been all but abandoned by everyone else. Avoid it if you can.                 |
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| UML      | This is not an official data modeling notation (yet). Although several suggestions for a data modeling profile for the UML exist, none are complete and more importantly are not “official” UML yet. However, the Object Management Group (OMG) in December 2005 announced an RFP for data-oriented models.                                  |
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
 How to Model Data
 -----------------
 
@@ -62,7 +42,7 @@ Identify Entity Types
 
 An entity type (or entities ) is 
 * conceptually similar to a class in object oriented programming.
-*  represents a collection of similar objects.
+* represents a collection of similar objects.
 * depicts a single conceptual object in the real world.
 
 In our example the entities will be: 
@@ -95,7 +75,7 @@ Identify Relationships
 
 * Entities are related to each other through relationships.
 * It is similar to the concept of associations in object oriented programming.
-* Once relationships are identified, we can determine the `cardinality`.
+* Once relationships are identified, we can determine the `cardinality` and `optionality`.
 * Cardinality: The number of instances of one entity that can be associated with instances of another entity
     - One to One
     - One to Many
@@ -106,6 +86,18 @@ Identify Relationships
         #. Blood to Plasma: One to One
         #. Blood to DNA: One to One
         #. DNA to SeqRun: Many to One
+
+* Optionality: Whether an instance of one entity must be associated with an instance of another entity
+    - Optional: An instance of one entity may or may not be associated with an instance of another entity
+    - Mandatory: An instance of one entity must be associated with an instance of another entity
+    - In our example the relationships will be:
+        #. Patient to Blood: Optional
+        #. Patient to Urine: Optional
+        #. Blood to Plasma: Mandatory
+        #. Blood to DNA: Mandatory
+        #. DNA to SeqRun: Optional
+
+
 
 Assign Keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -220,13 +212,162 @@ They help to illustrate how data is structured and how different entities intera
    :alt: Entity relationship diagram showing patient, blood, urine, plasma, DNA, and sequencing run entities
    :align: center
 
+.. note::
+
+    There are different types of notations available for an ER diagram. Here we are using Barker notation.
 
 
-- `Entities`: The boxes represent entity types such as `Patient`, `Blood`, `Urine`, `Plasma`, `DNA`, and `SeqRun`.
-- `Attributes`: Each entity contains its own characteristics, such as `patient_id`, `blood_id`, `dna_id`, and `run_date`.
-- `Relationships`: The arrows show how entities are connected. For example, a patient has many blood samples, and a blood sample produces DNA.
-- `Cardinality`: The different arrow heads show how many records on one side can relate to the other side. For example, one patient can have many blood samples.
-- `Primary keys`: The identifier inside each entity, such as `patient_id` or `blood_id`, uniquely identifies that table's rows.
-- `Foreign keys`: The attributes such as `Blood.patient_id` and `DNA.blood_id` connect each entity back to its parent record.
+
+Entities
+~~~~~~~~~~~~~~~~
+
+An entity is drawn as a rounded rectangle, with its singular name at the top
+and its attributes inside. For example:
+
+.. code-block:: text
+
+   .----------------------.
+   | PATIENT              |
+   |----------------------|
+   | # patient_id         |
+   | * name               |
+   | o date_of_birth      |
+   '----------------------'
+
+Attributes
+~~~~~~~~~~~~~~~~
+
+The symbol before an attribute describes its role:
+
+.. list-table:: Attribute symbols
+   :header-rows: 1
+   :widths: 15 35 50
+
+   * - Symbol
+     - Meaning
+     - Example
+   * - ``#``
+     - Part of a unique identifier
+     - ``# patient_id`` identifies a patient.
+   * - ``*``
+     - Mandatory attribute
+     - ``* name`` requires a value.
+   * - ``o``
+     - Optional attribute
+     - ``o date_of_birth`` may have no value.
 
 
+
+Relationships
+~~~~~~~~~~~~~~~~
+
+A relationship is labelled with a meaningful phrase
+in each direction. Its notation describes both cardinality (one or many) and
+optionality (whether participation is required).
+
+Cardinality
+~~~~~~~~~~~
+
+.. list-table:: Relationship shapes
+   :header-rows: 1
+   :widths: 25 40 35
+
+   * - Relationship
+     - Notation
+     - Example
+   * - One-to-one
+     - No crow's foot at either end
+     - A sample and its single storage record.
+   * - One-to-many
+     - Crow's foot at the many end
+     - A patient and their samples; the crow's foot is at SAMPLE.
+   * - Many-to-many
+     - Crow's foot at both ends
+     - Patients and studies, where each can be associated with several of the other.
+
+These examples assume the stated modelling rules. Cardinality alone does not
+say whether a relationship is optional.
+
+Optional and mandatory participation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each half of a relationship line can have a different style. To read from
+entity A to entity B, use the line style beside A and the endpoint beside B.
+
+.. list-table:: Reading from A to B
+   :header-rows: 1
+   :widths: 30 35 35
+
+   * - Line beside A
+     - Endpoint beside B
+     - Meaning
+   * - Dashed
+     - No crow's foot
+     - A may relate to zero or one B.
+   * - Solid
+     - No crow's foot
+     - A must relate to exactly one B.
+   * - Dashed
+     - Crow's foot
+     - A may relate to zero or many Bs.
+   * - Solid
+     - Crow's foot
+     - A must relate to one or many Bs.
+
+For example, suppose a patient may provide samples, but every sample must
+belong to one patient:
+
+.. code-block:: text
+
+   [PATIENT] - - - - --------< [SAMPLE]
+               provides
+               belongs to
+
+.. note::
+    
+    Here, ``<`` is a text approximation of a crow's foot. The dashed half beside
+    PATIENT makes providing samples optional. The solid half beside SAMPLE makes
+    belonging to a patient mandatory. The crow's foot at SAMPLE allows many samples
+    per patient; the plain endpoint at PATIENT allows one patient per sample.
+
+A recursive relationship loops back to the same entity, such as a staff member
+supervising other staff members. Its ends use the same cardinality and
+optionality rules.
+
+.. note::
+
+   * In Barker notation, dashed and solid lines indicate optional and mandatory
+     participation, respectively.
+   * A short bar across a relationship near an entity indicates that the
+     relationship contributes to that entity's unique identifier.
+
+.. figure:: images/02-er-diagram.png
+   :alt: Patient relates to many Blood and Urine records. Blood relates one-to-one to Plasma and DNA. DNA relates many-to-one to SeqRun.
+   :align: center
+   :width: 100%
+
+
+
+.. admonition:: TODO: What is the intended DNA-to-SeqRun relationship?
+
+   Can one DNA sample have several sequencing runs, or can one sequencing run
+   contain several DNA samples?
+
+   The relationship list says **DNA to SeqRun: Many to One**. This means
+   several DNA records can relate to one sequencing run. However, the attribute
+   list places ``dna_id`` inside ``SeqRun`` as a foreign key. A foreign key
+   stores the identifier of a related record, so each ``SeqRun.dna_id`` value
+   points to one DNA record.
+
+   For example, if RUN001 and RUN002 both store DNA001 in their ``dna_id``
+   field, one DNA record has two sequencing runs. Unless ``SeqRun.dna_id`` is
+   constrained to be unique, this structure permits **DNA to SeqRun: One to
+   Many**, which is the reverse of the stated relationship.
+
+   If one DNA sample can have several sequencing runs, keep ``SeqRun.dna_id``
+   as the foreign key, change the relationship to one-to-many, and place the
+   diagram's crow's foot at the SeqRun end. In a simple one-to-many
+   relationship, the foreign key belongs on the many side.
+
+   Confirm the intended relationship before changing the model, then make
+   the relationship list, foreign keys, and diagram agree.
