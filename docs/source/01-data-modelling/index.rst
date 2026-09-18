@@ -4,7 +4,7 @@ Data Modelling in GEN3
 Learn about data modelling and how to prepare data for search and exploration in GEN3.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    01-data-modelling-101.rst
    02-data-dictionary.rst
