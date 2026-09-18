@@ -1,5 +1,13 @@
-GEN3 Microservices
-===============
+GEN3 Overview and Components
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+   00-gen3-overview.rst
+
+
+The following are the components of GEN3:
 
 .. toctree::
    :maxdepth: 1
