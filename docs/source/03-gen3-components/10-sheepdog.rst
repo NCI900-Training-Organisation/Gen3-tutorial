@@ -10,4 +10,4 @@ ensure all required fields are present and have appropriate data values.
     
     * ``Sheepdog`` validates structured submissions against that model and stores the submitted graph in PostgreSQL. 
     
-    * ``Peregrine`` exposes the normalized graph through GraphQL.
+    * ``Peregrine`` exposes the normalised graph through GraphQL.

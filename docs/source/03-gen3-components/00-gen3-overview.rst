@@ -3,7 +3,7 @@ GEN3 Overview
 
 Gen3 is an open-source platform for building data commons, data meshes, data
 hubs, and secure analysis workspaces. It helps research communities manage,
-share, discover, and analyze data while retaining control over access.
+share, discover, and analyse data while retaining control over access.
 
 Why Gen3?
 ---------
@@ -29,8 +29,8 @@ Gen3 is designed to support the FAIR data principles:
 1. **Findable**: Metadata and query services index data with unique, persistent identifiers
    and make the data searchable across resources.
 
-2. **Accessible**: Authentication and authorization services protect data, while a web portal
-   lets authorized users explore projects and launch analysis workspaces.
+2. **Accessible**: Authentication and authorisation services protect data, while a web portal
+   lets authorised users explore projects and launch analysis workspaces.
 
 3. **Interoperable**: Open APIs use common protocols and formats so that Gen3 can communicate
    with other data resources.
@@ -47,7 +47,7 @@ Data commons
 ~~~~~~~~~~~~~~~~~~~~~~
 
 A data commons places data management services alongside tools for data
-exploration, analysis, and visualization. It can manage structured information,
+exploration, analysis, and visualisation. It can manage structured information,
 such as clinical, phenotypic, and biospecimen data, as well as unstructured
 objects such as genomic files and medical images. A data commons can also
 interoperate with other resources in a data mesh.
@@ -84,13 +84,13 @@ Workspaces
 Gen3 workspaces are secure cloud analysis environments that can access data
 from one or more resources. The default workspace applications include
 JupyterLab and RStudio, but operators can provide other applications, analysis
-workflows, processing pipelines, and visualization tools.
+workflows, processing pipelines, and visualisation tools.
 
-Workspaces use Gen3 mesh services to authenticate and authorize users and to
+Workspaces use Gen3 mesh services to authenticate and authorise users and to
 retrieve data objects and metadata. Workspace images can contain different
 software packages and tutorials, and operators can offer virtual machines with
 different compute resources. A persistent drive retains a user's notebooks,
-results, and other artifacts between sessions.
+results, and other artefacts between sessions.
 
 Core capabilities
 -----------------
@@ -100,13 +100,13 @@ Data management
 
 Gen3 manages three broad types of data:
 
-1. **Structured data**: Tables or JSON records that conform to a data model. The model harmonizes
+1. **Structured data**: Tables or JSON records that conform to a data model. The model harmonises
    submitted data and defines links between related records. Structured data
    is used to build cohorts and identify files of interest.
 
 2. **Unstructured data**: Files stored in object storage or indexed in place. Each file receives a
    persistent identifier, such as a GUID, and can be downloaded or sent to an
-   analysis environment when the user is authorized.
+   analysis environment when the user is authorised.
 
 3. **Semi-structured data**: Flexible JSON records that can contain nested fields without requiring a
    fixed hierarchy. Typical uses include dataset discovery metadata,
@@ -117,8 +117,8 @@ Data access
 
 Gen3 uses attribute-based access control to protect data, compute resources,
 and user-interface components. :doc:`Arborist <01-arborist>` is the policy engine. Access rules
-can be maintained in YAML allowlists or synchronized with an external
-authorization source.
+can be maintained in YAML allowlists or synchronised with an external
+authorisation source.
 
 Users can access data in several ways:
 

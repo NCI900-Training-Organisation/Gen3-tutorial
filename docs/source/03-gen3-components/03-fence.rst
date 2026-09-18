@@ -1,7 +1,7 @@
 Fence
 -----
 
-``Fence`` is an authentication and authorization service that uses the OpenID
+``Fence`` is an authentication and authorisation service that uses the OpenID
 Connect flow to generate tokens for clients. It can also provide tokens directly
 to a user. Clients and users may then use those tokens with other Gen3 Data
 Commons services to access protected endpoints that require specific permissions.

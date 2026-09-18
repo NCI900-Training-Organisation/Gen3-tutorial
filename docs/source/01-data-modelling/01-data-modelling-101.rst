@@ -2,20 +2,20 @@ Data Modelling 101
 ==================
 
 
-Data modeling is the act of exploring data-oriented structures. 
-It is conceptually similar to class modeling in object oriented programming.
+Data modelling is the act of exploring data-oriented structures. 
+It is conceptually similar to class modelling in object oriented programming.
 
-* With data modeling you identify `entity types` whereas with class modeling you `identify classes`. 
+* With data modelling you identify `entity types` whereas with class modelling you `identify classes`. 
 
 * `Data attributes` are assigned to `entity types` just as you would assign `attributes` and `operations` to `classes`. 
 
 * There are associations between entities, similar to the associations between classes.
 
-* Just like in classes relationships, inheritance, composition, and aggregation are all applicable concepts in data modeling.
+* Just like in classes relationships, inheritance, composition, and aggregation are all applicable concepts in data modelling.
 
 .. note::
 
-    Data modeling focuses solely on `data` while class models allow you to explore both the `behavior` 
+    Data modelling focuses solely on `data` while class models allow you to explore both the `behaviour` 
     and `data` aspects of your domain.
 
 
@@ -34,7 +34,7 @@ We will use the following steps to model this data.
 2. Identify Attributes
 3. Identify Relationships
 4. Assign Keys
-5. Data Normalization
+5. Data Normalisation
 
 
 Identify Entity Types
@@ -151,10 +151,10 @@ Entity-by-entity key summary:
 
 This example shows how identifiers allow us to distinguish each record and enforce relationships between related data.
 
-Data Normalization
+Data Normalisation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Data normalization is the process of organizing data to minimize (or eliminate) redundancy and improve data integrity.
+- Data normalisation is the process of organising data to minimise (or eliminate) redundancy and improve data integrity.
 - There are 3 main normal forms (1NF, 2NF, 3NF) that are commonly used in relational database design.
 
 Using the patient study example:
@@ -192,14 +192,14 @@ The name belongs in the `Patient` table, not in `Blood`.
 
 Similarly, if a `DNA` row stored the patient name or blood type, that would violate 3NF because those values are not directly about the DNA itself; they are inherited from related entities.
 
-In a well-normalized design:
+In a well-normalised design:
 
 - `Patient` contains patient-specific information
 - `Blood` contains blood-specific information
 - `DNA` contains DNA-specific information
 - each table relates to others using keys instead of repeating the same data
 
-This minimizes redundancy and keeps the database easier to query, update, and maintain.
+This minimises redundancy and keeps the database easier to query, update, and maintain.
 
 Entity Relationship (ER) diagrams
 -----------------------------------
