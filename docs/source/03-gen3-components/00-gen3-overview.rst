@@ -179,6 +179,20 @@ A typical user journey is:
 #. Send the selected data to an analysis environment.
 
 
+The architecture below shows how Gen3's front-end applications, APIs, and
+back-end services work together.
+
 .. figure:: images/architecture_2.png
-    :alt: Gen3 general architecture showing front-end components, APIs, and back-end services
+   :alt: Gen3 general architecture showing front-end components, APIs, and back-end services
+   :align: center
+
+
+The following diagram illustrates the general flow of data through these
+components:
+
+.. figure:: images/dataflow.png
+    :alt: Gen3 general dataflow
     :align: center
+
+
+The following pages describe each component in more detail.
