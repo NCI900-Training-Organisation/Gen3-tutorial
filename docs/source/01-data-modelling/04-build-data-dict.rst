@@ -1,5 +1,5 @@
 
-Build data dictionary
+Build Data Dictionary
 ============================
 
 The input file is stored at ``sample-data-dict/input.yaml``. To generate the data dictionary, run the following commands from the ``sample-data-dict`` directory:

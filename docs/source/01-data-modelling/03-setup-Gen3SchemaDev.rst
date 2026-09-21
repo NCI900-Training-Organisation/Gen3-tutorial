@@ -72,7 +72,7 @@ Reload your shell configuration, install Python, and select it as your default:
       python --version
 
 
-Install Gen3SchemaDev for use
+Install Gen3SchemaDev
 -----------------------------
 
 In your data dictionary project directory, create an isolated environment
