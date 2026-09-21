@@ -9,3 +9,7 @@ for structured data.
 
     * ``Peregrine`` queries the complete PostgreSQL graph and is useful when a query depends on the original relationships.
     * ``Guppy`` queries the Elasticsearch representation and is useful for fast, repeated Explorer searches.
+
+.. figure:: images/architecture_1.png
+    :alt: Gen3 data architecture showing Peregrine and Guppy query services
+    :align: center

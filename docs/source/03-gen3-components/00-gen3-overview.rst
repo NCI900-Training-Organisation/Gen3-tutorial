@@ -165,3 +165,8 @@ A typical user journey is:
 #. Search structured data and select a cohort.
 #. Manage cohort and user-specific information.
 #. Send the selected data to an analysis environment.
+
+
+.. figure:: images/architecture_2.png
+    :alt: Gen3 general architecture showing front-end components, APIs, and back-end services
+    :align: center
