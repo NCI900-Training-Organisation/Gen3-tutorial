@@ -12,17 +12,19 @@ In this tutorial we are using ``Python 3.13.15``.
 
 .. note::
 
-   In Mac ensure that the full Xcode toolchain is available. Without it, pyenv can use the Homebrew LLVM compiler instead of the Apple/Xcode 
-   toolchain, and the build can fail during configuration.
+   On macOS, ensure that the full Xcode toolchain is available before building
+   Python from source. This is not required when a compatible Python version
+   is already installed.
 
-   For mac, Install Xcode from the App Store, then select it:
+   Install Xcode from the App Store, then select it:
 
    .. code-block:: bash
 
       sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
       xcodebuild -version
 
-   If the build still prefers the Homebrew clang, force the Xcode toolchain for the current shell before running pyenv:
+   If ``pyenv install`` fails while compiling Python, force the Xcode toolchain
+   for the current shell and retry:
 
    .. code-block:: bash
 
@@ -56,15 +58,30 @@ Reload your shell configuration, install Python, and select it as your default:
 .. code-block:: bash
 
    source ~/.zshrc
+   
    pyenv install -s 3.13.15
    pyenv global 3.13.15
+   pyenv rehash
+
+   pyenv which python
+   python --version
+
+The first Python path should be the pyenv shim, similar to
+``/Users/your-user/.pyenv/shims/python``. If ``pyenv which python`` returns a
+path under ``~/.pyenv/versions/3.13.15`` but ``python`` is still not found,
+initialize pyenv again in the current shell:
+
+.. code-block:: bash
+
+   export PATH="$HOME/.pyenv/shims:$HOME/.pyenv/bin:$PATH"
+   eval "$(pyenv init - zsh)"
    pyenv rehash
    python --version
 
 .. note::
 
    If your terminal prompt shows an active Conda environment such as ``(base)``,
-   deactivate it before checking Python so that Conda does not override the pyenv:
+   deactivate it before checking Python so that Conda does not override pyenv:
 
    .. code-block:: bash
 
@@ -85,9 +102,14 @@ and install Gen3SchemaDev:
    python -m pip install gen3schemadev
    gen3schemadev --version
 
-For subsequent sessions, activate the environment again from the same directory:
+Activate pyenv and the Python environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For subsequent sessions, from the data dictionary project directory, activate
+pyenv first, then activate the Python virtual environment:
 
 .. code-block:: bash
 
+   source ~/.zshrc
    source .venv/bin/activate
 
