@@ -21,6 +21,18 @@ control, and analysis services in a secure platform. Operators decide how
 public their systems and data should be, while open APIs and standard
 protocols allow Gen3 deployments to interoperate.
 
+
+.. note::
+
+   * ``Gen3 Operator``: Operates and maintains a Gen3 deployment, including the data commons, data mesh, or data hub.
+
+   * ``Gen3 Contributor``: Contributes data to a Gen3 deployment, including structured data, unstructured files, and semi-structured metadata.
+
+   * ``Gen3 User``: Uses a Gen3 deployment to discover, access, and analyse data.
+
+   There can be overlap between these roles. For example, a Gen3 contributor can also be a Gen3 user.
+
+
 FAIR data principles
 --------------------
 
