@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" role="img" aria-labelledby="title desc">
+  <title id="title">Talos image launch flow</title>
+  <desc id="desc">The Talos QCOW2 image is stored in Glance. Nova selects the image and a flavor to launch virtual machines, which are configured as Kubernetes nodes.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#475569"/></marker>
+    <style>
+      text { font-family: sans-serif; fill: #17212b; }
+      .title { font-size: 23px; font-weight: 700; }
+      .label { font-size: 19px; font-weight: 700; }
+      .body { font-size: 15px; }
+      .muted { fill: #52606d; }
+      .box { stroke-width: 2; rx: 10; }
+    </style>
+  </defs>
+  <rect width="1000" height="420" rx="12" fill="#f5f7f8"/>
+  <text x="40" y="44" class="title">From Talos image to Kubernetes nodes</text>
+
+  <rect x="72" y="91" width="310" height="108" class="box" fill="#dcebf5" stroke="#397da3"/>
+  <text x="227" y="128" text-anchor="middle" class="label">Glance image catalog</text>
+  <text x="227" y="157" text-anchor="middle" class="body">Talos Linux QCOW2 boot image</text>
+  <text x="227" y="180" text-anchor="middle" class="body muted">Stored image and metadata</text>
+
+  <rect x="618" y="91" width="310" height="108" class="box" fill="#fff0d7" stroke="#c78316"/>
+  <text x="773" y="128" text-anchor="middle" class="label">Flavor selection</text>
+  <text x="773" y="157" text-anchor="middle" class="body">vCPU, memory, local disk</text>
+  <text x="773" y="180" text-anchor="middle" class="body muted">Virtual hardware profile</text>
+
+  <path d="M227 205 V245 H410" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M773 205 V245 H590" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="356" y="237" width="288" height="76" class="box" fill="#e3f2ec" stroke="#43886e"/>
+  <text x="500" y="270" text-anchor="middle" class="label">Nova compute service</text>
+  <text x="500" y="295" text-anchor="middle" class="body">Creates and schedules servers</text>
+
+  <path d="M500 319 V344" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="118" y="353" width="350" height="52" class="box" fill="#ffffff" stroke="#8bb9a5"/>
+  <text x="293" y="385" text-anchor="middle" class="label">Control-plane and ingress VMs</text>
+  <rect x="532" y="353" width="350" height="52" class="box" fill="#ffffff" stroke="#8bb9a5"/>
+  <text x="707" y="385" text-anchor="middle" class="label">Worker and Elasticsearch VMs</text>
+</svg>

@@ -1,0 +1,94 @@
+# -----------------------------------------------------------------
+# Gen3 Deployment Inventory
+# -----------------------------------------------------------------
+# Various configuration vars and host groups for deploying Gen3
+# This file is for a specific Gen3 environment
+
+all:
+  vars:
+    # The hostname and title for this environment.
+    # Used for various Dex instances and portal text.
+    # URLs for Grafana, Argo etc
+    gen3_hostname: "gen3-train.nci.org.au"
+    gen3_env_title: "NCI 1000 Genomes Gen3 TRAIN Environment"
+
+    # Which LDAP group has the editor role in Grafana
+    grafana_editor_group: nd36
+
+    # -----------------------------------------------------------------
+    # ArgoCD Configuration
+    # -----------------------------------------------------------------
+    # ArgoCD gets its Helm values.yaml from the ArgoCD repo.
+    # The directory and branch in the repo is defined here.
+    # These values are overridden by the values in this repo
+    # at roles/gen3/templates/gen3-values-overrides.yaml.
+    # Define the LDAP group allowed to log in to ArgoCD.
+    gen3_argo_git_url: https://git.nci.org.au/nci-cloud/gen3-argocd.git
+    gen3_argo_values: "gen31k-train/gen3/values/gen31k-train-values.yaml"
+    gen3_argo_dir: "gen31k-train/gen3"
+    gen3_argo_branch: testing
+    gen3_argo_maintainer_group: "nd36"
+
+    # -----------------------------------------------------------------
+    # Pre-existing Backup Bucket Checking
+    # -----------------------------------------------------------------
+    grafana_db_wal_dir: "database/grafana-db-cluster/wals/"
+    gen3_db_wal_dir: "database/gen3-db-cluster/wals/"
+
+    # -----------------------------------------------------------------
+    # S3 bucket definitions
+    # -----------------------------------------------------------------
+    # None of these buckets are directly accessed by users.
+    # Data put into these buckets is done via Gen3 or DB backups
+    # using presigned URLs.
+    # -----------------------------------------------------------------
+
+    # OpenStack S3 endpoint
+    gen3_s3_endpoint: "https://cloud.nci.org.au:8080"
+
+    # Storage for Gen3 Fence security event logs.
+    # These are uploaded by fluent, which is deployed by the monitoring role.
+    gen3_log_bucket: "gen3-train-logs"
+
+    # Backup bucket to store Gen3 and Grafana DB cluster backups.
+    # Bucket is also used by the Talos cluster to store etcd backups.
+    gen3_backup_bucket: "gen3-train-backups"
+
+    # Gen3 uploaded file storage bucket.
+    # Files uploaded using the Gen3 interface or API.
+    gen3_upload_bucket: "gen3-train-upload"
+
+    # User.yaml authorizations file
+    gen3_user_yaml_s3: "s3://gen3-train-user-yaml/user.yaml"
+
+    # -----------------------------------------------------------------
+    # Postgres Version
+    # -----------------------------------------------------------------
+    # Postgres version of the Gen3 database.
+    # If you are doing an in-place version upgrade, then
+    # initiate the upgrade by patching the version of the existing
+    # clusters.postgresql object.
+    # Once that is complete, update the version here.
+    # -----------------------------------------------------------------
+    gen3_postgres_version: 18.6
+
+    # -----------------------------------------------------------------
+    # Gen3 Authentication and Authorization
+    # -----------------------------------------------------------------
+    # Gen3 authentication is via OIDC.
+    # In our case this is NCI LDAP via Dex.
+    # -----------------------------------------------------------------
+    gen3_oidc_discovery: "https://gen3-train.nci.org.au/dex/.well-known/openid-configuration"
+    gen3_oidc_client_id: "gen3-train"
+    gen3_dex_issuer: "https://gen3-train.nci.org.au/dex"
+    gen3_dex_redirect_uri: "https://gen3-train.nci.org.au/user/login/generic_oidc_idp/login"
+
+    # OpenStack storage type to use for Kubernetes StorageClasses.
+    # This is the storage backing type for Kubernetes provisioned volumes
+    # via the CSI driver.
+    # The volume types for cloud-test are different to cloud, so we have to specify.
+    storageclass_transaction: "Nirin2_Default"
+
+  children:
+    jumpbox:
+      hosts: nd36-train-talosctl

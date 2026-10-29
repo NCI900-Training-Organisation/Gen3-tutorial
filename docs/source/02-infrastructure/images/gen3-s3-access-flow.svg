@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" role="img" aria-labelledby="title desc">
+  <title id="title">Gen3 S3 object-storage access</title>
+  <desc id="desc">OpenStack EC2 credentials are stored securely for Gen3. Gen3 uses the access and secret keys to authenticate S3 API requests to object-storage buckets.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#475569"/></marker>
+    <marker id="arrowBoth" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#475569"/></marker>
+    <style>
+      text { font-family: sans-serif; fill: #17212b; }
+      .title { font-size: 23px; font-weight: 700; }
+      .label { font-size: 19px; font-weight: 700; }
+      .body { font-size: 15px; }
+      .muted { fill: #52606d; }
+      .box { stroke-width: 2; rx: 10; }
+    </style>
+  </defs>
+  <rect width="1000" height="390" rx="12" fill="#f5f7f8"/>
+  <text x="40" y="44" class="title">Gen3 access to S3-compatible object storage</text>
+
+  <rect x="55" y="100" width="260" height="135" class="box" fill="#dcebf5" stroke="#397da3"/>
+  <text x="185" y="137" text-anchor="middle" class="label">OpenStack identity</text>
+  <text x="185" y="167" text-anchor="middle" class="body">Service user + project role</text>
+  <text x="185" y="195" text-anchor="middle" class="body muted">Generate EC2 credentials</text>
+
+  <path d="M322 167 H382" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="395" y="100" width="230" height="135" class="box" fill="#fff0d7" stroke="#c78316"/>
+  <text x="510" y="137" text-anchor="middle" class="label">Secret store</text>
+  <text x="510" y="167" text-anchor="middle" class="body">Access key + secret key</text>
+  <text x="510" y="195" text-anchor="middle" class="body muted">Never commit credentials</text>
+
+  <path d="M632 167 H692" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="705" y="100" width="240" height="135" class="box" fill="#e3f2ec" stroke="#43886e"/>
+  <text x="825" y="137" text-anchor="middle" class="label">Gen3 application</text>
+  <text x="825" y="167" text-anchor="middle" class="body">Loads credentials securely</text>
+  <text x="825" y="195" text-anchor="middle" class="body muted">Signs S3 API requests</text>
+
+  <path d="M825 241 V287" stroke="#475569" stroke-width="3" marker-start="url(#arrowBoth)" marker-end="url(#arrowBoth)"/>
+  <rect x="290" y="298" width="420" height="70" class="box" fill="#f0e9f3" stroke="#8564a5"/>
+  <text x="500" y="328" text-anchor="middle" class="label">S3-compatible buckets</text>
+  <text x="500" y="352" text-anchor="middle" class="body muted">Gen3 reads and writes objects and datasets</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" role="img" aria-labelledby="title desc">
+  <title id="title">Gen3 and OpenStack overview</title>
+  <desc id="desc">A Gen3 application runs on a Kubernetes cluster using Talos virtual machines. The virtual machines and cloud resources are managed in an OpenStack project.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#475569"/></marker>
+    <style>
+      text { font-family: sans-serif; fill: #17212b; }
+      .title { font-size: 23px; font-weight: 700; }
+      .label { font-size: 18px; font-weight: 700; }
+      .body { font-size: 15px; }
+      .muted { fill: #52606d; }
+      .box { stroke-width: 2; rx: 10; }
+    </style>
+  </defs>
+  <rect width="1000" height="620" rx="12" fill="#f5f7f8"/>
+  <text x="40" y="44" class="title">Gen3 platform on OpenStack</text>
+
+  <rect x="270" y="76" width="460" height="78" class="box" fill="#dcebf5" stroke="#397da3"/>
+  <text x="500" y="109" text-anchor="middle" class="label">Gen3 application</text>
+  <text x="500" y="135" text-anchor="middle" class="body muted">Data commons services and user-facing workloads</text>
+  <path d="M500 154 V185" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="74" y="194" width="852" height="220" class="box" fill="#e3f2ec" stroke="#43886e"/>
+  <text x="500" y="228" text-anchor="middle" class="label">Kubernetes cluster running Talos Linux</text>
+  <rect x="110" y="251" width="375" height="126" class="box" fill="#ffffff" stroke="#8bb9a5"/>
+  <text x="297" y="286" text-anchor="middle" class="label">Control plane and ingress</text>
+  <text x="297" y="316" text-anchor="middle" class="body">Cluster management and traffic entry</text>
+  <text x="297" y="345" text-anchor="middle" class="body muted">Typically the smaller flavor</text>
+  <rect x="515" y="251" width="375" height="126" class="box" fill="#ffffff" stroke="#8bb9a5"/>
+  <text x="702" y="286" text-anchor="middle" class="label">Workers and Elasticsearch</text>
+  <text x="702" y="316" text-anchor="middle" class="body">Application workloads and search</text>
+  <text x="702" y="345" text-anchor="middle" class="body muted">Typically the larger flavor</text>
+  <path d="M500 414 V444" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="74" y="453" width="852" height="128" class="box" fill="#f0e8f8" stroke="#8564a5"/>
+  <text x="500" y="485" text-anchor="middle" class="label">OpenStack project: nd36</text>
+  <rect x="103" y="504" width="250" height="54" class="box" fill="#ffffff" stroke="#b39acb"/>
+  <text x="228" y="527" text-anchor="middle" class="body">Compute</text>
+  <text x="228" y="548" text-anchor="middle" class="body muted">VMs and flavors</text>
+  <rect x="375" y="504" width="250" height="54" class="box" fill="#ffffff" stroke="#b39acb"/>
+  <text x="500" y="527" text-anchor="middle" class="body">Storage</text>
+  <text x="500" y="548" text-anchor="middle" class="body muted">Volumes and object access</text>
+  <rect x="647" y="504" width="250" height="54" class="box" fill="#ffffff" stroke="#b39acb"/>
+  <text x="772" y="527" text-anchor="middle" class="body">Networking</text>
+  <text x="772" y="548" text-anchor="middle" class="body muted">Networks and floating IPs</text>
+</svg>
