@@ -13,8 +13,12 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   01-provisioning.rst
-   02-jumpbox.rst
-   03-talos-cluster.rst
-   04-prerequisites.rst
-   05-ansible-deployment.rst
+   01-provisioning
+   02-jumpbox
+   03-talos-cluster
+   04-prerequisites
+   05-gen3-inventory
+   06-deployment-values
+   07-user-auth
+   08-ansible-vault
+   09-deploy-gen3
