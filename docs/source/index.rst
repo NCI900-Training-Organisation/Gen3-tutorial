@@ -13,6 +13,4 @@ Contents
    
    03-gen3-components/index.rst
    01-data-modelling/index.rst
-   02-infrastructure/index.rst
-   04-login/01-login.rst
    references.rst
