@@ -8,4 +8,6 @@ Reference
 #. https://miro.com/app/board/uXjVJLNeLVE=/?share_link_id=537020778527
 #. https://www.visual-paradigm.com/guide/data-modeling/what-is-entity-relationship-diagram/#erd-data-models-conceptual
 #. https://docs.oracle.com/cd/E29463_01/doc.33/e35120/data_modeling.htm
-
+#. https://docs.gen3.org/en/latest/user/gen3-sdk/index.html
+#. https://gen3.org/resources/developer/microservice/
+#. https://docs.gen3.org/gen3-resources/operator-guide/helm/helm-config/helm-config-data-svcs/
