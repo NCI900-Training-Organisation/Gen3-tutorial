@@ -1,4 +1,4 @@
-Generate an API Token and Download a File
+Generate an API Token 
 ========================================
 
 Use the Gen3 Python SDK to exchange a downloaded API credential for a
