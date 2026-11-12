@@ -1,19 +1,23 @@
-GEN3 Tutorial
+Gen3 Tutorial
 =============
 
-This repository provides an introductory tutorial on setting up infrastructure for GEN3 using OpenStack.
-It also provides an end-to-end tutorial on how to model data for GEN3 and curate it for different GEN3 components, including, but not limited to, Elasticsearch.
+Start with the Gen3 overview and component guide, then follow the stream for
+your role. Users work with data, data managers design its model, and operators
+provide and maintain the platform. One person may follow more than one stream.
 
-Contents
---------
+.. figure:: /images/gen3-role-streams.png
+   :alt: Three Gen3 learning streams: users authenticate and exchange data; data managers design and validate models; operators deploy and maintain the platform.
+   :align: center
+   :width: 100%
+
+   Three learning streams share the same Gen3 foundations.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   
-   03-gen3-components/index.rst
-   01-data-modelling/index.rst
-   06-local-gen3-deploy/index.rst
-   07-generate-token/01-gen-token
-   08-gen3-sdk/index
-   references.rst
+   overview/index
+   components/index
+   users/index
+   data-managers/index
+   operators/index
+   references
