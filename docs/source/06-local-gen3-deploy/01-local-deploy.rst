@@ -6,8 +6,10 @@ control-plane node, local-path persistent storage, MinIO object storage, LDAP
 and Dex login, HTTP ingress, and the Gen3 application. It is intended for a
 disposable local training environment, not production.
 
-The commands below assume the repository root is the current directory. The
-deployment inputs include the bundled dictionary at
+Clone the repository first, then run repository commands from its root. All
+Python tools in this tutorial use the existing ``~/.gen3-local-tools``
+environment; activate it in each terminal session instead of creating another
+environment for each tool. The deployment inputs include the bundled dictionary at
 ``sample-data-dict/output-json/bundled-schema.json``.
 
 Platform support
@@ -49,13 +51,12 @@ engine is ready. The playbook also attempts to open Docker Desktop for you.
 Docker Desktop is subject to Docker's licensing terms; check those terms for
 your organization.
 
-Create an isolated Python environment and install Ansible, its Kubernetes
-client library, and the required collections:
+Activate the existing Python environment, then install Ansible, its Kubernetes
+client library, and the required collections into it:
 
 .. code-block:: console
 
-	python3 -m venv "$HOME/.venvs/gen3-local"
-	source "$HOME/.venvs/gen3-local/bin/activate"
+	source "$HOME/.gen3-local-tools/bin/activate"
 	python -m pip install --upgrade pip
 	python -m pip install ansible kubernetes==36.0.2 'boto3>=1.34' 'python-dateutil<3' PyYAML
 	ansible-galaxy collection install kubernetes.core amazon.aws
@@ -163,13 +164,13 @@ appropriate for the vendored chart, then verify its published checksum before
 installing; see the `Helm installation and verification guide
 <https://helm.sh/docs/intro/install/>`_.
 
-Create the Python environment, install Ansible dependencies and collections,
-and install the MinIO client into the path expected by the playbooks:
+Activate the existing Python environment, install Ansible dependencies and
+collections into it, and install the MinIO client into the path expected by
+the playbooks:
 
 .. code-block:: console
 
-	python3 -m venv "$HOME/.venvs/gen3-local"
-	source "$HOME/.venvs/gen3-local/bin/activate"
+	source "$HOME/.gen3-local-tools/bin/activate"
 	python -m pip install --upgrade pip
 	python -m pip install ansible kubernetes==36.0.2 'boto3>=1.34' 'python-dateutil<3' PyYAML
 	ansible-galaxy collection install kubernetes.core amazon.aws
@@ -185,13 +186,13 @@ host networking in the playbooks.
 Check out the repository and inputs
 --------------------------------------
 
-Clone this repository and change into its root directory. Activate the Python
-environment created above, then confirm the dictionary exists:
+From the repository root, activate the shared Python environment and confirm
+the dictionary exists:
 
 .. code-block:: console
 
 	cd /path/to/Gen3-tutorial
-	source "$HOME/.venvs/gen3-local/bin/activate"
+	source "$HOME/.gen3-local-tools/bin/activate"
 
 
 
