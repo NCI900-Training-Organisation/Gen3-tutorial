@@ -46,6 +46,4 @@ replace it, pass ``--overwrite``:
 
 	python src/04-download_sample_file.py --overwrite
 
-The credentials file contains API secrets; keep it private and do not commit
-it. This local training commons uses HTTP, so run this only on a trusted local
-machine or network.
+

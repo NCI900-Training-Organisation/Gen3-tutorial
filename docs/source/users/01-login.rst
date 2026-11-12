@@ -10,6 +10,17 @@ training environment, open `http://gen3.kind.test <http://gen3.kind.test>`_.
 #. Open **Profile** to create API credentials as described in
    :doc:`/users/api-credentials/01-gen-token`.
 
+
+.. note::
+
+
+   At NCI, the Gen3 portal use either the NCI LDAP, `REMS <https://aaf.edu.au/resources/rems/>`_ or any other identity 
+   provider configured by the operator such as such as Google or GitHub.. 
+   
+   The training LDAP is used in this repository's local deployment because it is simple to set up and
+   does not require an external account. 
+
+
 Which services handle login?
 ----------------------------
 

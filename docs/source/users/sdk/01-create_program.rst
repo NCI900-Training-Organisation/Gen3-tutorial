@@ -13,17 +13,42 @@ ask your operator to create them if your account cannot do so.
 
 This guide explains the records in ``sample-data/`` and the fields and links
 your own data must contain before submitting it to the local Gen3 commons.
-The examples are synthetic and use the bundled dictionary in
-``sample-data-dict/output-json/bundled-schema.json``. Never use real patient
-information for this training exercise.
+The examples use the bundled dictionary in
+``sample-data-dict/output-json/bundled-schema.json``.
 
 Create the program and project first
 ------------------------------------
 
 The bundled dictionary defines a ``program`` node and a ``project`` node.
-``program`` is marked ``submittable: false``, so create the program through the
-portal or the approved administrative workflow, not with the sample records.
-The program schema requires ``name`` and ``dbgap_accession_number``.
+A program is a top-level container for projects. In this tutorial, program
+``training`` contains project ``demo``.
+
+.. figure:: /images/06-data-dictionary-graph-view.png
+   :alt: Data dictionary graph showing Program above Project, with patient and sample records linked below the project.
+   :align: center
+   :width: 100%
+
+
+
+``program`` is marked ``submittable: false``. This means you cannot create a
+program through the ordinary metadata submission process used for patient,
+blood, or DNA records. An authorised administrator must create it through the
+program-management API or an available portal administration feature.
+
+.. note::
+
+  In practice only an operator or administrator can create a program. In this case we are jus assuming 
+  that the user has the necessary permissions to create a program for training purposes.
+  
+The program schema requires:
+
+* ``name``: the program's name, such as ``training``.
+* ``dbgap_accession_number``: its accession identifier. This tutorial uses
+  ``LOCAL-SYNTHETIC`` as a training placeholder.
+
+The script ``src/01-create_program.py --create-program`` creates the program
+through the SDK's administrative API. Once the program exists, you can create
+its project and submit metadata.
 
 Run the project creation script from the repository root, using your API
 credentials in ``credentials.json``:
@@ -137,7 +162,9 @@ Sequencing files and file metadata
 The ``seqrun`` node is categorized as ``data_file`` and links to a DNA record
 through ``dnas``. It inherits file properties from the dictionary's
 ``data_file_properties``, including ``file_name``, ``file_size``, ``md5sum``,
-``file_state``, ``object_id`` and ``state``. Do not create a sample ``seqrun``
+``file_state``, ``object_id`` and ``state``. 
+
+Do not create a sample ``seqrun``
 with guessed file details. First upload a real synthetic test file through
 Gen3, then use the returned GUID as ``object_id`` and the actual filename,
 size, and checksum. Link it to an existing DNA record with ``dnas``. The

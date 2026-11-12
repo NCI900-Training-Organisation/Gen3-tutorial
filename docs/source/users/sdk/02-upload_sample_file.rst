@@ -16,8 +16,6 @@ commons. It uses the API credentials in the repository-root
 ``credentials.json`` and requests upload authorization for the existing
 ``training/demo`` project.
 
-Keep the credentials file private. It is ignored by Git; do not remove it from
-``.gitignore`` or print its contents.
 
 Activate the shared Python environment and run the uploader from the repository
 root:

@@ -14,7 +14,7 @@ does not make a file visible in Exploration.
      - What happens
    * - Browser login
      - Data Portal, Fence, Dex, LDAP
-     - Fence uses Dex as the identity provider; Dex checks the LDAP account.
+     - In this deployment Fence uses Dex as the identity provider; Dex checks the LDAP account.
    * - API authentication
      - Fence
      - The SDK exchanges the saved API credential for an access token.
@@ -48,9 +48,9 @@ does not make a file visible in Exploration.
        and provides a presigned URL; the client downloads from MinIO.
 
 **Fence** is the authentication and file-access service in these examples.
-**Peregrine** retrieves graph metadata; it does not transfer FASTQ bytes.
-If you encounter **Fluent** in infrastructure settings, it refers to log
-collection for operators, rather than the token or file-transfer service.
+**Peregrine** retrieves graph metadata. **Sheepdog** validates and stores graph metadata. **Indexd** tracks file
+If you encounter **Fluent** in infrastructure settings, it refers to log collection for operators, rather than the 
+token or file-transfer service.
 
 The SDK wraps the HTTP APIs. A token identifies your session, while permissions
 still determine which projects and files you can access. See the
