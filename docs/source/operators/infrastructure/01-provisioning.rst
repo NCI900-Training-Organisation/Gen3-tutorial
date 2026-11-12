@@ -9,7 +9,7 @@ approved for the environment being provisioned.
 These are administrative operations. The commands below are separate commands;
 do not paste multiple commands from different lines together as one command.
 
-.. figure:: /images/gen3-openstack-overview.svg
+.. figure:: /images/09-gen3-openstack-overview.svg
 	:alt: Gen3 runs on a Talos Kubernetes cluster whose virtual machines and cloud resources belong to an OpenStack project.
 	:width: 90%
 
@@ -158,7 +158,7 @@ published checksum is what verifies the file before upload. ``--public``
 makes the image visible to all OpenStack projects, so only use it when that
 visibility is intended and permitted.
 
-.. figure:: /images/talos-image-launch-flow.svg
+.. figure:: /images/10-talos-image-launch-flow.svg
 	:alt: Talos image is stored in Glance, selected with a flavor by Nova, and used to launch virtual machines that form the Kubernetes cluster.
 	:width: 90%
 
@@ -171,7 +171,7 @@ visibility is intended and permitted.
 Gen3 needs S3-compatible credentials to access its object-storage buckets.
 Create a dedicated service user rather than reusing a person's LDAP account.
 
-.. figure:: /images/gen3-s3-access-flow.svg
+.. figure:: /images/11-gen3-s3-access-flow.svg
 	:alt: Gen3 uses S3 access and secret keys from a securely stored service-account credential to access object-storage buckets.
 	:width: 90%
 

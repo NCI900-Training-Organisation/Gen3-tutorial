@@ -38,17 +38,17 @@ Then generate a visual representation from the bundled schema:
 
 You should be able to see the visual representation of the data dictionary in your browser. 
 
-.. image:: /images/03-graph-view.png
+.. image:: /images/06-data-dictionary-graph-view.png
    :alt: Graph view of the data dictionary showing nodes and links
    :align: center
    :class: image-spaced
 
-.. image:: /images/04-properties.png
+.. image:: /images/07-data-dictionary-properties.png
    :alt: Properties view of the data dictionary showing node properties and their attributes
    :align: center
    :class: image-spaced
 
-.. image:: /images/05-property-details.png
+.. image:: /images/08-data-dictionary-property-details.png
    :alt: Details of the properties of the `Patient` node in the data dictionary.
    :align: center
    :class: image-spaced

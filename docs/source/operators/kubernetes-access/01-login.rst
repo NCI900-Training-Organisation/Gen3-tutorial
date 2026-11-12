@@ -19,7 +19,7 @@ Replace ``<username>`` and ``<server-ip>`` with your own login details:
 Enter your SSH password when prompted. After connecting, the server displays
 its welcome message and cluster information.
 
-.. image:: /images/1-ssh.png
+.. image:: /images/13-kubernetes-access-ssh.png
 	:alt: Welcome message after connecting to the access server over SSH
 	:width: 100%
 
@@ -37,7 +37,7 @@ The script configures your Kubernetes user and updates the default context. It
 then prints the cluster name and URL, along with a sign-in URL containing a
 temporary device code.
 
-.. image:: /images/2-url.png
+.. image:: /images/14-kubernetes-sign-in-url.png
 	:alt: Authentication setup output with the sign-in URL
 	:width: 100%
 
@@ -50,14 +50,14 @@ screenshots are examples and should not be reused.
 
 If prompted, enter the user code from the URL or terminal output and submit it.
 
-.. image:: /images/3-passcode.png
+.. image:: /images/15-kubernetes-device-code.png
 	:alt: Browser page for entering the one-time user code
 	:width: 100%
 
 At the LDAP login page, sign in with your training account credentials. Do not
 share your password or the temporary device code.
 
-.. image:: /images/4-ldap-auth.png
+.. image:: /images/16-kubernetes-ldap-login.png
 	:alt: LDAP login page for Kubernetes authentication
 	:width: 100%
 
@@ -66,6 +66,6 @@ The authentication process should finish there, leaving your Kubernetes
 context ready for the training exercises. The setup message indicates that
 this browser sign-in is normally needed only once.
 
-.. image:: /images/5-auth-success.png
+.. image:: /images/17-kubernetes-login-success.png
 	:alt: Confirmation that Gen3 training Kubernetes login succeeded
 	:width: 100%

@@ -351,7 +351,7 @@ optionality rules.
    * A short bar across a relationship near an entity indicates that the
      relationship contributes to that entity's unique identifier.
 
-.. figure:: /images/02-er-diagram.png
+.. figure:: /images/05-patient-sample-er-diagram.png
    :alt: Patient relates to many Blood and Urine records. Blood relates one-to-one to Plasma and DNA. DNA relates many-to-one to SeqRun.
    :align: center
    :width: 100%

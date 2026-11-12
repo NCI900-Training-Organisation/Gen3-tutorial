@@ -5,7 +5,7 @@ Start with the Gen3 overview and component guide, then follow the stream for
 your role. Users work with data, data managers design its model, and operators
 provide and maintain the platform. One person may follow more than one stream.
 
-.. figure:: /images/gen3-role-streams.png
+.. figure:: /images/01-gen3-roles.png
    :alt: Three Gen3 learning streams: users authenticate and exchange data; data managers design and validate models; operators deploy and maintain the platform.
    :align: center
    :width: 100%

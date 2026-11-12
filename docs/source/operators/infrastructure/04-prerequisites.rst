@@ -21,7 +21,7 @@ Each commons generally has a top-level directory for each environment, such as
 Dev, Test, and Production.
 
 
-.. image:: /images/deployment-workflow.png
+.. image:: /images/12-gen3-deployment-workflow.png
     :alt: Workflow from OpenStack infrastructure provisioning through Ansible and Argo CD deployment, with Git changes triggering updates
     :align: center
 
