@@ -7,12 +7,12 @@
   connection: local
   gather_facts: false
   vars:
-    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
     state_dir: "{{ lookup('env', 'HOME') }}/.gen3-local"
-    dictionary_file: '{{ playbook_dir }}/../sample-data-dict/output-json/bundled-schema.json'
+    dictionary_file: "{{ playbook_dir }}/../sample-data-dict/output-json/bundled-schema.json"
     allow_dictionary_update: false
     # Change deliberately to retry a failed policy Job; successful Jobs are reused.
-    initialization_run_id: ''
+    initialization_run_id: ""
   environment:
     PATH: "{{ lookup('env', 'HOME') }}/.local/bin:{{ lookup('env', 'PATH') }}"
   pre_tasks:
@@ -45,19 +45,19 @@
 
     - name: Check prerequisite private files and dictionary
       ansible.builtin.stat:
-        path: '{{ item }}'
+        path: "{{ item }}"
       loop:
-        - '{{ state_dir }}/minio.env'
-        - '{{ state_dir }}/gen3-oidc-client-secret'
-        - '{{ dictionary_file }}'
+        - "{{ state_dir }}/minio.env"
+        - "{{ state_dir }}/gen3-oidc-client-secret"
+        - "{{ dictionary_file }}"
       register: app_inputs
 
     - name: Require infrastructure and dictionary inputs
       ansible.builtin.assert:
         that: item.stat.isreg | default(false) and item.stat.size | default(0) > 0
-      loop: '{{ app_inputs.results }}'
+      loop: "{{ app_inputs.results }}"
       loop_control:
-        label: '{{ item.item }}'
+        label: "{{ item.item }}"
 
     - name: Load the supplied dictionary without modifying it
       ansible.builtin.set_fact:
@@ -87,12 +87,12 @@
           kind: Namespace
           metadata:
             name: gen3
-            labels: {pod-security.kubernetes.io/enforce: privileged}
+            labels: { pod-security.kubernetes.io/enforce: privileged }
 
     # Never regenerate passwords for a database that already has persistent data.
     - name: Inspect saved credentials
       ansible.builtin.stat:
-        path: '{{ state_dir }}/application-credentials.json'
+        path: "{{ state_dir }}/application-credentials.json"
       register: app_saved
 
     - name: Inspect existing PostgreSQL volumes
@@ -119,34 +119,50 @@
 
     - name: Recover the existing token signing key when the local copy is missing
       ansible.builtin.copy:
-        dest: '{{ state_dir }}/fence-jwt-private-key.pem'
+        dest: "{{ state_dir }}/fence-jwt-private-key.pem"
         content: '{{ app_existing_jwt.resources[0].data["jwt_private_key.pem"] | b64decode }}'
         force: false
-        mode: '0600'
+        mode: "0600"
       when: app_existing_jwt.resources | length > 0
       no_log: true
 
     - name: Generate the stable Fence token signing key once
       ansible.builtin.command:
-        argv: [openssl, genpkey, -algorithm, RSA, -pkeyopt, 'rsa_keygen_bits:2048', -out, '{{ state_dir }}/fence-jwt-private-key.pem']
-        creates: '{{ state_dir }}/fence-jwt-private-key.pem'
+        argv:
+          [
+            openssl,
+            genpkey,
+            -algorithm,
+            RSA,
+            -pkeyopt,
+            "rsa_keygen_bits:2048",
+            -out,
+            "{{ state_dir }}/fence-jwt-private-key.pem",
+          ]
+        creates: "{{ state_dir }}/fence-jwt-private-key.pem"
       no_log: true
 
     - name: Protect the private signing key
       ansible.builtin.file:
-        path: '{{ state_dir }}/fence-jwt-private-key.pem'
-        mode: '0600'
+        path: "{{ state_dir }}/fence-jwt-private-key.pem"
+        mode: "0600"
 
     - name: Prepare private values using saved credentials and current MinIO credentials
       ansible.builtin.command:
-        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/prepare-application-values.py', '{{ state_dir }}', '{{ playbook_dir }}/config/gen3-values.yaml']
+        argv:
+          [
+            "{{ ansible_playbook_python }}",
+            "{{ playbook_dir }}/tasks/prepare-application-values.py",
+            "{{ state_dir }}",
+            "{{ playbook_dir }}/config/gen3-values.yaml",
+          ]
       register: app_prepared
       changed_when: false
       no_log: true
 
     - name: Load private runtime values without displaying them
       ansible.builtin.set_fact:
-        app_runtime: '{{ app_prepared.stdout | from_json }}'
+        app_runtime: "{{ app_prepared.stdout | from_json }}"
       no_log: true
 
     - name: Check existing PostgreSQL credentials before applying changes
@@ -167,35 +183,35 @@
 
     - name: Write the private Helm values outside the repository
       ansible.builtin.copy:
-        dest: '{{ state_dir }}/application-values.yaml'
+        dest: "{{ state_dir }}/application-values.yaml"
         content: '{{ app_runtime["values"] | to_nice_yaml }}'
-        mode: '0600'
+        mode: "0600"
       no_log: true
 
     - name: Install PostgreSQL credential Secrets
       kubernetes.core.k8s:
-        definition: '{{ item }}'
+        definition: "{{ item }}"
       loop:
         - apiVersion: v1
           kind: Secret
-          metadata: {name: gen3-postgres-auth, namespace: gen3}
+          metadata: { name: gen3-postgres-auth, namespace: gen3 }
           stringData:
-            password: '{{ app_runtime.credentials.postgres_password }}'
-            service-password: '{{ app_runtime.credentials.service_password }}'
+            password: "{{ app_runtime.credentials.postgres_password }}"
+            service-password: "{{ app_runtime.credentials.service_password }}"
         - apiVersion: v1
           kind: Secret
-          metadata: {name: postgres-dbcreds, namespace: gen3}
+          metadata: { name: postgres-dbcreds, namespace: gen3 }
           stringData:
             host: gen3-postgres
-            port: '5432'
+            port: "5432"
             username: postgres
             database: postgres
-            password: '{{ app_runtime.credentials.postgres_password }}'
+            password: "{{ app_runtime.credentials.postgres_password }}"
       no_log: true
 
     - name: Install single PostgreSQL and Elasticsearch instances
       kubernetes.core.k8s:
-        src: '{{ playbook_dir }}/manifests/{{ item }}.yaml'
+        src: "{{ playbook_dir }}/manifests/{{ item }}.yaml"
       loop: [postgres, elasticsearch]
 
     - name: Wait for persistent database and search services
@@ -205,7 +221,20 @@
 
     - name: Create missing service roles and databases without rotating passwords
       ansible.builtin.command:
-        argv: [kubectl, exec, -i, -n, gen3, statefulset/gen3-postgres, --, psql, --no-psqlrc, -U, postgres]
+        argv:
+          [
+            kubectl,
+            exec,
+            -i,
+            -n,
+            gen3,
+            statefulset/gen3-postgres,
+            --,
+            psql,
+            --no-psqlrc,
+            -U,
+            postgres,
+          ]
         stdin: '{{ lookup("file", playbook_dir + "/tasks/bootstrap-databases.sql") }}'
       changed_when: false
       no_log: true
@@ -223,14 +252,14 @@
           - -ec
           - 'PGPASSWORD="$GEN3_SERVICE_PASSWORD" psql -h 127.0.0.1 -U "$1" -d "$2" -v ON_ERROR_STOP=1 -c "SELECT 1" >/dev/null'
           - verify
-          - '{{ item.user }}'
-          - '{{ item.db }}'
+          - "{{ item.user }}"
+          - "{{ item.db }}"
       loop:
-        - {user: fence_gen3, db: fence}
-        - {user: arborist_gen3, db: arborist}
-        - {user: indexd_gen3, db: indexd}
-        - {user: sheepdog_gen3, db: sheepdog}
-        - {user: peregrine_gen3, db: sheepdog}
+        - { user: fence_gen3, db: fence }
+        - { user: arborist_gen3, db: arborist }
+        - { user: indexd_gen3, db: indexd }
+        - { user: sheepdog_gen3, db: sheepdog }
+        - { user: peregrine_gen3, db: sheepdog }
       changed_when: false
       no_log: true
 
@@ -251,16 +280,16 @@
 
     - name: Supply the unchanged dictionary and local AWS addressing settings
       kubernetes.core.k8s:
-        definition: '{{ item }}'
+        definition: "{{ item }}"
       loop:
         - apiVersion: v1
           kind: ConfigMap
-          metadata: {name: gen3-dictionary, namespace: gen3}
+          metadata: { name: gen3-dictionary, namespace: gen3 }
           data:
             dictionary.json: '{{ lookup("file", dictionary_file) }}'
         - apiVersion: v1
           kind: ConfigMap
-          metadata: {name: gen3-training-aws-config, namespace: gen3}
+          metadata: { name: gen3-training-aws-config, namespace: gen3 }
           data:
             config: |
               [default]
@@ -269,11 +298,11 @@
                   addressing_style = path
                   signature_version = s3v4
       loop_control:
-        label: '{{ item.metadata.name }}'
+        label: "{{ item.metadata.name }}"
 
     - name: Serve the dictionary inside Kubernetes
       kubernetes.core.k8s:
-        src: '{{ playbook_dir }}/manifests/dictionary.yaml'
+        src: "{{ playbook_dir }}/manifests/dictionary.yaml"
 
     - name: Wait for the dictionary server
       ansible.builtin.command: kubectl rollout status deployment/dictionary -n gen3 --timeout=300s
@@ -282,7 +311,8 @@
     # Empty, versioned bootstrap indices prevent the Guppy/first-ETL deadlock.
     - name: Initialize absent exploration aliases and mappings without inserting records
       ansible.builtin.command:
-        argv: [kubectl, exec, -i, -n, gen3, deployment/dictionary, --, python, '-']
+        argv:
+          [kubectl, exec, -i, -n, gen3, deployment/dictionary, --, python, "-"]
         stdin: '{{ lookup("file", playbook_dir + "/tasks/initialize-search.py") }}'
       changed_when: false
 
@@ -305,7 +335,12 @@
 
     - name: Register Fence's generic OIDC callback with Dex without changing its secret
       ansible.builtin.command:
-        argv: ['{{ ansible_playbook_python }}', '-c', "import sys,json,yaml; d=yaml.safe_load(sys.stdin.read()); c=next(c for c in d['staticClients'] if c['id']=='gen3'); u='http://gen3.kind.test/user/login/generic_oidc_idp/login'; c['redirectURIs']=list(dict.fromkeys(c['redirectURIs']+[u])); print(json.dumps(d))"]
+        argv:
+          [
+            "{{ ansible_playbook_python }}",
+            "-c",
+            "import sys,json,yaml; d=yaml.safe_load(sys.stdin.read()); c=next(c for c in d['staticClients'] if c['id']=='gen3'); u='http://gen3.kind.test/user/login/generic_oidc_idp/login'; c['redirectURIs']=list(dict.fromkeys(c['redirectURIs']+[u])); print(json.dumps(d))",
+          ]
         stdin: '{{ app_dex_config.resources[0].data["config.yaml"] | b64decode }}'
       register: app_dex_updated
       changed_when: false
@@ -316,9 +351,9 @@
         definition:
           apiVersion: v1
           kind: Secret
-          metadata: {name: dex-config, namespace: dex}
+          metadata: { name: dex-config, namespace: dex }
           stringData:
-            config.yaml: '{{ app_dex_updated.stdout | from_json | to_nice_yaml }}'
+            config.yaml: "{{ app_dex_updated.stdout | from_json | to_nice_yaml }}"
       register: app_dex_changed
       no_log: true
 
@@ -335,7 +370,22 @@
       block:
         - name: Install Gen3 directly from the vendored chart
           ansible.builtin.command:
-            argv: [helm, upgrade, --install, gen3, '{{ playbook_dir }}/charts/gen3', --namespace, gen3, -f, '{{ state_dir }}/application-values.yaml', '--wait=false', --timeout, 15m]
+            argv:
+              [
+                helm,
+                upgrade,
+                --install,
+                gen3,
+                "{{ playbook_dir }}/charts/gen3",
+                --namespace,
+                gen3,
+                -f,
+                "{{ state_dir }}/application-values.yaml",
+                --force-conflicts,
+                "--wait=false",
+                --timeout,
+                15m,
+              ]
           changed_when: true
           no_log: true
 
@@ -355,8 +405,22 @@
 
         - name: Initialize and verify Indexd's internal service accounts
           ansible.builtin.command:
-            argv: [kubectl, exec, -i, -n, gen3, deployment/indexd-deployment, --, /bin/bash, -ec, 'if command -v python >/dev/null; then exec python -c "$1"; else exec poetry run python -c "$1"; fi', initialize, '{{ lookup("file", playbook_dir + "/tasks/initialize-indexd.py") }}']
-            stdin: '{{ app_runtime.credentials.indexd | to_json }}'
+            argv:
+              [
+                kubectl,
+                exec,
+                -i,
+                -n,
+                gen3,
+                deployment/indexd-deployment,
+                --,
+                /bin/bash,
+                -ec,
+                'if command -v python >/dev/null; then exec python -c "$1"; else exec poetry run python -c "$1"; fi',
+                initialize,
+                '{{ lookup("file", playbook_dir + "/tasks/initialize-indexd.py") }}',
+              ]
+            stdin: "{{ app_runtime.credentials.indexd | to_json }}"
           changed_when: false
           no_log: true
 
@@ -368,20 +432,20 @@
             definition:
               apiVersion: traefik.io/v1alpha1
               kind: IngressRoute
-              metadata: {name: gen3, namespace: gen3}
+              metadata: { name: gen3, namespace: gen3 }
               spec:
                 entryPoints: [web]
                 routes:
                   - match: Host(`gen3.kind.test`)
                     kind: Rule
                     priority: 10
-                    services: [{name: revproxy-service, port: 80}]
+                    services: [{ name: revproxy-service, port: 80 }]
 
         - name: Check the portal and Fence status from the laptop
           ansible.builtin.uri:
-            url: 'http://gen3.kind.test{{ item }}'
+            url: "http://gen3.kind.test{{ item }}"
             status_code: 200
-          loop: ['/', '/user/_status']
+          loop: ["/", "/user/_status"]
           register: app_http_check
           until: app_http_check.status | default(0) == 200
           retries: 12
@@ -409,8 +473,8 @@
     - name: Explain the next acceptance checks
       ansible.builtin.debug:
         msg:
-          - 'Open http://gen3.kind.test and log in using mongoose / mangoose.'
-          - 'Private Helm values and passwords are in {{ state_dir }}; do not commit them.'
-          - 'Dictionary and empty exploration indices are installed. No patient or file records were fabricated.'
-          - 'Create program training / project demo, submit metadata, then run 03-refresh-search.yaml to index it.'
-          - 'Portal login, API credential generation and an actual file round trip still require acceptance testing.'
+          - "Open http://gen3.kind.test and log in using mongoose / mangoose."
+          - "Private Helm values and passwords are in {{ state_dir }}; do not commit them."
+          - "Dictionary and empty exploration indices are installed. No patient or file records were fabricated."
+          - "Create program training / project demo, submit metadata, then run 03-refresh-search.yaml to index it."
+          - "Portal login, API credential generation and an actual file round trip still require acceptance testing."

@@ -230,13 +230,8 @@ spec:
               value: {{ default "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json" .Values.global.dictionaryUrl | quote }}
             - name: INDEX_CLIENT_HOST
               value: {{ default "http://indexd-service" .Values.global.indexdURL | quote }}
-            {{- if eq .Values.global.dev false }}
             - name: FENCE_URL
-              value: https://{{ .Values.global.hostname }}/user
-            {{- else }}
-            - name: FENCE_URL
-              value: {{ default "http://fence-service" .Values.global.fenceURL | quote }}
-            {{- end }}
+              value: {{ default (ternary "http://fence-service" (printf "https://%s/user" .Values.global.hostname) .Values.global.dev) .Values.global.fenceURL | quote }}
             - name: ARBORIST_URL
               value: {{ default "http://arborist-service" .Values.global.arboristURL | quote }}
             {{- with .Values.authNamespace }}
