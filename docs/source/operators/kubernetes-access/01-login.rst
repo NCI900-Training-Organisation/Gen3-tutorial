@@ -1,3 +1,5 @@
+:orphan:
+
 Log in to the Gen3 Training Kubernetes Cluster
 ===============================================
 

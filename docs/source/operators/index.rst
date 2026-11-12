@@ -2,8 +2,8 @@ Operators
 =========
 
 Follow this stream to provision infrastructure, deploy Gen3, and maintain
-identity, access policies, persistent storage, and search. Choose the local
-training deployment or the OpenStack infrastructure path for your environment.
+identity, access policies, persistent storage, and search using the local
+training deployment.
 
 The local guide documents the current HTTP training environment. For an HTTPS
 deployment, configure ingress certificates and the matching identity-provider
@@ -13,8 +13,6 @@ redirect URLs as part of the deployment configuration.
    :maxdepth: 2
 
    /operators/local-deployment/index
-   /operators/infrastructure/index
-   /operators/kubernetes-access/01-login
    01-refresh-search
 
 Kubernetes login is an administration task; portal login and API credentials
