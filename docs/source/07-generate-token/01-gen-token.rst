@@ -4,7 +4,7 @@ Generate an API Token and Download a File
 Use the Gen3 Python SDK to exchange a downloaded API credential for a
 short-lived access token, then download a file by its GUID. Install the SDK
 into the shared ``~/.gen3-local-tools`` environment by following
-:doc:`/08-gen3-sdk/01-install-sdk`. The SDK keeps the token in memory and
+:doc:`/08-gen3-sdk/00-install-sdk`. The SDK keeps the token in memory and
 refreshes it when needed; do not print or commit it.
 
 Create and download API credentials

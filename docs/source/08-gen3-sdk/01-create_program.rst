@@ -1,5 +1,5 @@
-Prepare Sample Data for Submission
-==================================
+Create the Program and Project
+==============================
 
 This guide explains the records in ``sample-data/`` and the fields and links
 your own data must contain before submitting it to the local Gen3 commons.
@@ -14,6 +14,20 @@ The bundled dictionary defines a ``program`` node and a ``project`` node.
 ``program`` is marked ``submittable: false``, so create the program through the
 portal or the approved administrative workflow, not with the sample records.
 The program schema requires ``name`` and ``dbgap_accession_number``.
+
+Run the project creation script from the repository root, using your API
+credentials in ``credentials.json``:
+
+.. code-block:: console
+
+	python src/01-create_program.py
+
+If the ``training`` program does not exist yet, create it together with the
+project:
+
+.. code-block:: console
+
+	python src/01-create_program.py --create-program
 
 The sample submission script targets program ``training`` and project code
 ``demo``. Create those first, or update the values in
@@ -134,7 +148,7 @@ Submit parent records before children so every reference resolves:
 	 GUID and a link to its DNA record.
 
 The helper script submits the provided JSON files in that order through the
-Gen3 Python SDK. See :doc:`/08-gen3-sdk/01-install-sdk` for SDK setup and
+Gen3 Python SDK. See :doc:`/08-gen3-sdk/00-install-sdk` for SDK setup and
 :doc:`/07-generate-token/01-gen-token` for API credentials and authentication.
 To submit the synthetic sample set, follow the instructions in
 ``sample-data/README.md``. Reusing the same ``submitter_id`` values can update
