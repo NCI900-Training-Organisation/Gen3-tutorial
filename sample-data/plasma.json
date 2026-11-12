@@ -1,0 +1,22 @@
+[
+    {
+        "type": "plasma",
+        "submitter_id": "SYN-PLA-001",
+        "plasma_id": "SYN-PLA-001",
+        "bloods": [
+            {
+                "submitter_id": "SYN-BLD-001"
+            }
+        ]
+    },
+    {
+        "type": "plasma",
+        "submitter_id": "SYN-PLA-002",
+        "plasma_id": "SYN-PLA-002",
+        "bloods": [
+            {
+                "submitter_id": "SYN-BLD-002"
+            }
+        ]
+    }
+]

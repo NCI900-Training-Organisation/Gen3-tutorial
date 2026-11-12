@@ -1,0 +1,24 @@
+[
+    {
+        "type": "dna",
+        "submitter_id": "SYN-DNA-001",
+        "dna_id": "SYN-DNA-001",
+        "dna_specimen_id": "SYN-DNA-001",
+        "bloods": [
+            {
+                "submitter_id": "SYN-BLD-001"
+            }
+        ]
+    },
+    {
+        "type": "dna",
+        "submitter_id": "SYN-DNA-002",
+        "dna_id": "SYN-DNA-002",
+        "dna_specimen_id": "SYN-DNA-002",
+        "bloods": [
+            {
+                "submitter_id": "SYN-BLD-002"
+            }
+        ]
+    }
+]

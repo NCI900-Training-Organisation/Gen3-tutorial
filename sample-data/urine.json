@@ -1,0 +1,12 @@
+[
+    {
+        "type": "urine",
+        "submitter_id": "SYN-URN-001",
+        "urine_id": "SYN-URN-001",
+        "patients": [
+            {
+                "submitter_id": "SYN-PAT-001"
+            }
+        ]
+    }
+]

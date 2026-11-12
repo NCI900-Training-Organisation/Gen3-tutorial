@@ -1,0 +1,22 @@
+[
+    {
+        "type": "patient",
+        "submitter_id": "SYN-PAT-001",
+        "patient_id": "SYN-PAT-001",
+        "projects": [
+            {
+                "code": "demo"
+            }
+        ]
+    },
+    {
+        "type": "patient",
+        "submitter_id": "SYN-PAT-002",
+        "patient_id": "SYN-PAT-002",
+        "projects": [
+            {
+                "code": "demo"
+            }
+        ]
+    }
+]
