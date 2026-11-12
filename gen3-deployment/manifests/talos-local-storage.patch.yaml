@@ -1,0 +1,6 @@
+# Talos machine configuration, not a Kubernetes resource.
+# Apply with talosctl patch machineconfig, never kubectl apply.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-path-provisioner
+volumeType: directory

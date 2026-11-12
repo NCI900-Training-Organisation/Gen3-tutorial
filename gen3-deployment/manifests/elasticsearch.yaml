@@ -1,0 +1,46 @@
+# One node, local disk and cluster-only HTTP; no operator or privileged sysctl.
+apiVersion: v1
+kind: Service
+metadata: {name: gen3-elasticsearch, namespace: gen3}
+spec:
+  selector: {app: gen3-elasticsearch}
+  ports: [{name: http, port: 9200}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: gen3-elasticsearch, namespace: gen3}
+spec:
+  serviceName: gen3-elasticsearch
+  replicas: 1
+  selector:
+    matchLabels: {app: gen3-elasticsearch}
+  template:
+    metadata:
+      labels: {app: gen3-elasticsearch}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {fsGroup: 1000}
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.17.28
+          env:
+            - {name: discovery.type, value: single-node}
+            - {name: xpack.security.enabled, value: 'false'}
+            - {name: node.store.allow_mmap, value: 'false'}
+            - {name: ES_JAVA_OPTS, value: '-Xms512m -Xmx512m'}
+          ports: [{name: http, containerPort: 9200}]
+          readinessProbe:
+            httpGet: {path: '/_cluster/health?wait_for_status=yellow&timeout=1s', port: http}
+            initialDelaySeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 768Mi}
+            limits: {memory: 1536Mi}
+          volumeMounts:
+            - {name: data, mountPath: /usr/share/elasticsearch/data}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        storageClassName: csi-cinder-sc-delete
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: {storage: 5Gi}

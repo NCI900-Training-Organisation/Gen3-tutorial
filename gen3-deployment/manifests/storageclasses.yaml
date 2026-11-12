@@ -1,0 +1,24 @@
+# Local aliases only: these names do not install or invoke Cinder CSI.
+# Infrastructure owns only the sc-delete/sc-retain classes. Transaction classes
+# are owned by training/infra-manager-only-files/local-roles/storage and are intentionally not duplicated here.
+# Binding waits for a consumer so provisioned paths match the selected node.
+# No resize or storage-capacity quota is provided by this backend.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-cinder-sc-delete
+  annotations:
+    storageclass.kubernetes.io/is-default-class: 'true'
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: false
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-cinder-sc-retain
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: false

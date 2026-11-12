@@ -1,0 +1,416 @@
+---
+# Run after 01-build-infrastructure.yaml. No GitLab, Argo CD or Vault required.
+# ansible-playbook gen3-deployment/02-deploy-gen3.yaml
+# HTTP is intentional for local training; do not expose these services publicly.
+- name: Deploy the local Gen3 application and exploration services
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    state_dir: "{{ lookup('env', 'HOME') }}/.gen3-local"
+    dictionary_file: '{{ playbook_dir }}/../sample-data-dict/output-json/bundled-schema.json'
+    allow_dictionary_update: false
+    # Change deliberately to retry a failed policy Job; successful Jobs are reused.
+    initialization_run_id: ''
+  environment:
+    PATH: "{{ lookup('env', 'HOME') }}/.local/bin:{{ lookup('env', 'PATH') }}"
+  pre_tasks:
+    - name: Reject check mode for a real installation
+      ansible.builtin.assert:
+        that: not ansible_check_mode
+        fail_msg: Use --syntax-check for offline validation.
+
+    - name: Read current Kubernetes endpoint
+      ansible.builtin.command: kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
+      register: app_api
+      changed_when: false
+
+    - name: Read this local Talos cluster endpoint
+      ansible.builtin.command: docker port gen3-local-controlplane-1 6443/tcp
+      register: app_port
+      changed_when: false
+
+    - name: Refuse installation into another cluster
+      ansible.builtin.assert:
+        that: app_api.stdout in ['https://127.0.0.1:' + app_port.stdout_lines[0].split(':')[-1], 'https://localhost:' + app_port.stdout_lines[0].split(':')[-1]]
+
+    - name: Require a healthy API and etcd
+      ansible.builtin.command: kubectl --request-timeout=10s get --raw=/readyz
+      register: api_ready
+      until: api_ready.rc == 0
+      retries: 6
+      delay: 5
+      changed_when: false
+
+    - name: Check prerequisite private files and dictionary
+      ansible.builtin.stat:
+        path: '{{ item }}'
+      loop:
+        - '{{ state_dir }}/minio.env'
+        - '{{ state_dir }}/gen3-oidc-client-secret'
+        - '{{ dictionary_file }}'
+      register: app_inputs
+
+    - name: Require infrastructure and dictionary inputs
+      ansible.builtin.assert:
+        that: item.stat.isreg | default(false) and item.stat.size | default(0) > 0
+      loop: '{{ app_inputs.results }}'
+      loop_control:
+        label: '{{ item.item }}'
+
+    - name: Load the supplied dictionary without modifying it
+      ansible.builtin.set_fact:
+        app_dictionary: '{{ lookup("file", dictionary_file) | from_json }}'
+
+    - name: Require the nodes used by the patient and file exploration mapping
+      ansible.builtin.assert:
+        that:
+          - "'patient.yaml' in app_dictionary"
+          - "'seqrun.yaml' in app_dictionary"
+          - "'program.yaml' in app_dictionary"
+          - "'project.yaml' in app_dictionary"
+        fail_msg: This profile's exploration mapping requires the supplied patient/seqrun training dictionary.
+
+    - name: Verify the infrastructure Dex endpoint
+      ansible.builtin.uri:
+        url: http://gen3.kind.test/dex/.well-known/openid-configuration
+        return_content: true
+      register: app_dex
+      failed_when: app_dex.json.issuer | default('') != 'http://gen3.kind.test/dex'
+
+  tasks:
+    - name: Prepare the application namespace for local persistent volumes
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: gen3
+            labels: {pod-security.kubernetes.io/enforce: privileged}
+
+    # Never regenerate passwords for a database that already has persistent data.
+    - name: Inspect saved credentials
+      ansible.builtin.stat:
+        path: '{{ state_dir }}/application-credentials.json'
+      register: app_saved
+
+    - name: Inspect existing PostgreSQL volumes
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: PersistentVolumeClaim
+        namespace: gen3
+        name: data-gen3-postgres-0
+      register: app_pg_volume
+
+    - name: Refuse credential loss for an existing database
+      ansible.builtin.assert:
+        that: app_saved.stat.exists or app_pg_volume.resources | length == 0
+        fail_msg: Restore application-credentials.json for the existing PostgreSQL volume; passwords are never silently reset.
+
+    - name: Inspect an existing Fence signing key without displaying it
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        namespace: gen3
+        name: fence-jwt-keys
+      register: app_existing_jwt
+      no_log: true
+
+    - name: Recover the existing token signing key when the local copy is missing
+      ansible.builtin.copy:
+        dest: '{{ state_dir }}/fence-jwt-private-key.pem'
+        content: '{{ app_existing_jwt.resources[0].data["jwt_private_key.pem"] | b64decode }}'
+        force: false
+        mode: '0600'
+      when: app_existing_jwt.resources | length > 0
+      no_log: true
+
+    - name: Generate the stable Fence token signing key once
+      ansible.builtin.command:
+        argv: [openssl, genpkey, -algorithm, RSA, -pkeyopt, 'rsa_keygen_bits:2048', -out, '{{ state_dir }}/fence-jwt-private-key.pem']
+        creates: '{{ state_dir }}/fence-jwt-private-key.pem'
+      no_log: true
+
+    - name: Protect the private signing key
+      ansible.builtin.file:
+        path: '{{ state_dir }}/fence-jwt-private-key.pem'
+        mode: '0600'
+
+    - name: Prepare private values using saved credentials and current MinIO credentials
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/prepare-application-values.py', '{{ state_dir }}', '{{ playbook_dir }}/config/gen3-values.yaml']
+      register: app_prepared
+      changed_when: false
+      no_log: true
+
+    - name: Load private runtime values without displaying them
+      ansible.builtin.set_fact:
+        app_runtime: '{{ app_prepared.stdout | from_json }}'
+      no_log: true
+
+    - name: Check existing PostgreSQL credentials before applying changes
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        namespace: gen3
+        name: gen3-postgres-auth
+      register: app_pg_secret
+      no_log: true
+
+    - name: Refuse changing installed database passwords
+      ansible.builtin.assert:
+        that:
+          - app_pg_secret.resources | length == 0 or app_pg_secret.resources[0].data.password | b64decode == app_runtime.credentials.postgres_password
+          - app_pg_secret.resources | length == 0 or app_pg_secret.resources[0].data['service-password'] | b64decode == app_runtime.credentials.service_password
+      no_log: true
+
+    - name: Write the private Helm values outside the repository
+      ansible.builtin.copy:
+        dest: '{{ state_dir }}/application-values.yaml'
+        content: '{{ app_runtime["values"] | to_nice_yaml }}'
+        mode: '0600'
+      no_log: true
+
+    - name: Install PostgreSQL credential Secrets
+      kubernetes.core.k8s:
+        definition: '{{ item }}'
+      loop:
+        - apiVersion: v1
+          kind: Secret
+          metadata: {name: gen3-postgres-auth, namespace: gen3}
+          stringData:
+            password: '{{ app_runtime.credentials.postgres_password }}'
+            service-password: '{{ app_runtime.credentials.service_password }}'
+        - apiVersion: v1
+          kind: Secret
+          metadata: {name: postgres-dbcreds, namespace: gen3}
+          stringData:
+            host: gen3-postgres
+            port: '5432'
+            username: postgres
+            database: postgres
+            password: '{{ app_runtime.credentials.postgres_password }}'
+      no_log: true
+
+    - name: Install single PostgreSQL and Elasticsearch instances
+      kubernetes.core.k8s:
+        src: '{{ playbook_dir }}/manifests/{{ item }}.yaml'
+      loop: [postgres, elasticsearch]
+
+    - name: Wait for persistent database and search services
+      ansible.builtin.command: kubectl rollout status statefulset/{{ item }} -n gen3 --timeout=600s
+      loop: [gen3-postgres, gen3-elasticsearch]
+      changed_when: false
+
+    - name: Create missing service roles and databases without rotating passwords
+      ansible.builtin.command:
+        argv: [kubectl, exec, -i, -n, gen3, statefulset/gen3-postgres, --, psql, --no-psqlrc, -U, postgres]
+        stdin: '{{ lookup("file", playbook_dir + "/tasks/bootstrap-databases.sql") }}'
+      changed_when: false
+      no_log: true
+
+    - name: Verify every service can log in to its database
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - exec
+          - -n
+          - gen3
+          - statefulset/gen3-postgres
+          - --
+          - sh
+          - -ec
+          - 'PGPASSWORD="$GEN3_SERVICE_PASSWORD" psql -h 127.0.0.1 -U "$1" -d "$2" -v ON_ERROR_STOP=1 -c "SELECT 1" >/dev/null'
+          - verify
+          - '{{ item.user }}'
+          - '{{ item.db }}'
+      loop:
+        - {user: fence_gen3, db: fence}
+        - {user: arborist_gen3, db: arborist}
+        - {user: indexd_gen3, db: indexd}
+        - {user: sheepdog_gen3, db: sheepdog}
+        - {user: peregrine_gen3, db: sheepdog}
+      changed_when: false
+      no_log: true
+
+    - name: Inspect the existing application dictionary
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: ConfigMap
+        namespace: gen3
+        name: gen3-dictionary
+      register: app_old_dictionary
+
+    - name: Require a deliberate decision before changing a deployed dictionary
+      ansible.builtin.assert:
+        that: >-
+          app_old_dictionary.resources | length == 0 or allow_dictionary_update | bool or
+          (app_old_dictionary.resources[0].data['dictionary.json'] | from_json) == app_dictionary
+        fail_msg: Dictionary changed. Plan schema/data migration before setting allow_dictionary_update=true.
+
+    - name: Supply the unchanged dictionary and local AWS addressing settings
+      kubernetes.core.k8s:
+        definition: '{{ item }}'
+      loop:
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata: {name: gen3-dictionary, namespace: gen3}
+          data:
+            dictionary.json: '{{ lookup("file", dictionary_file) }}'
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata: {name: gen3-training-aws-config, namespace: gen3}
+          data:
+            config: |
+              [default]
+              region = us-east-1
+              s3 =
+                  addressing_style = path
+                  signature_version = s3v4
+      loop_control:
+        label: '{{ item.metadata.name }}'
+
+    - name: Serve the dictionary inside Kubernetes
+      kubernetes.core.k8s:
+        src: '{{ playbook_dir }}/manifests/dictionary.yaml'
+
+    - name: Wait for the dictionary server
+      ansible.builtin.command: kubectl rollout status deployment/dictionary -n gen3 --timeout=300s
+      changed_when: false
+
+    # Empty, versioned bootstrap indices prevent the Guppy/first-ETL deadlock.
+    - name: Initialize absent exploration aliases and mappings without inserting records
+      ansible.builtin.command:
+        argv: [kubectl, exec, -i, -n, gen3, deployment/dictionary, --, python, '-']
+        stdin: '{{ lookup("file", playbook_dir + "/tasks/initialize-search.py") }}'
+      changed_when: false
+
+    - name: Read Dex configuration privately
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        namespace: dex
+        name: dex-config
+      register: app_dex_config
+      no_log: true
+
+    - name: Require the existing Dex client to match the saved secret
+      ansible.builtin.assert:
+        that:
+          - app_dex_config.resources | length == 1
+          - (app_dex_config.resources[0].data['config.yaml'] | b64decode | from_yaml).staticClients[0].id == 'gen3'
+          - (app_dex_config.resources[0].data['config.yaml'] | b64decode | from_yaml).staticClients[0].secret == lookup('file', state_dir + '/gen3-oidc-client-secret') | trim
+      no_log: true
+
+    - name: Register Fence's generic OIDC callback with Dex without changing its secret
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '-c', "import sys,json,yaml; d=yaml.safe_load(sys.stdin.read()); c=next(c for c in d['staticClients'] if c['id']=='gen3'); u='http://gen3.kind.test/user/login/generic_oidc_idp/login'; c['redirectURIs']=list(dict.fromkeys(c['redirectURIs']+[u])); print(json.dumps(d))"]
+        stdin: '{{ app_dex_config.resources[0].data["config.yaml"] | b64decode }}'
+      register: app_dex_updated
+      changed_when: false
+      no_log: true
+
+    - name: Preserve Dex settings and add the Fence callback
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata: {name: dex-config, namespace: dex}
+          stringData:
+            config.yaml: '{{ app_dex_updated.stdout | from_json | to_nice_yaml }}'
+      register: app_dex_changed
+      no_log: true
+
+    - name: Reload Dex when its callback configuration changes
+      ansible.builtin.command: kubectl rollout restart deployment/dex -n dex
+      when: app_dex_changed.changed
+      changed_when: true
+
+    - name: Wait for Dex after callback registration
+      ansible.builtin.command: kubectl rollout status deployment/dex -n dex --timeout=300s
+      changed_when: false
+
+    - name: Install and initialize Gen3 with bounded waits and safe diagnostics
+      block:
+        - name: Install Gen3 directly from the vendored chart
+          ansible.builtin.command:
+            argv: [helm, upgrade, --install, gen3, '{{ playbook_dir }}/charts/gen3', --namespace, gen3, -f, '{{ state_dir }}/application-values.yaml', '--wait=false', --timeout, 15m]
+          changed_when: true
+          no_log: true
+
+        - name: Wait for Gen3 deployment migrations and readiness
+          ansible.builtin.command: kubectl rollout status deployment/{{ item }} -n gen3 --timeout=1200s
+          loop:
+            - arborist-deployment
+            - fence-deployment
+            - presigned-url-fence-deployment
+            - indexd-deployment
+            - sheepdog-deployment
+            - peregrine-deployment
+            - guppy-deployment
+            - portal-deployment
+            - revproxy-deployment
+          changed_when: false
+
+        - name: Initialize and verify Indexd's internal service accounts
+          ansible.builtin.command:
+            argv: [kubectl, exec, -i, -n, gen3, deployment/indexd-deployment, --, /bin/bash, -ec, 'if command -v python >/dev/null; then exec python -c "$1"; else exec poetry run python -c "$1"; fi', initialize, '{{ lookup("file", playbook_dir + "/tasks/initialize-indexd.py") }}']
+            stdin: '{{ app_runtime.credentials.indexd | to_json }}'
+          changed_when: false
+          no_log: true
+
+        - name: Initialize authorization policy for the mongoose training user
+          ansible.builtin.include_tasks: tasks/initialize-policy.yaml
+
+        - name: Route the Gen3 portal and APIs over local HTTP
+          kubernetes.core.k8s:
+            definition:
+              apiVersion: traefik.io/v1alpha1
+              kind: IngressRoute
+              metadata: {name: gen3, namespace: gen3}
+              spec:
+                entryPoints: [web]
+                routes:
+                  - match: Host(`gen3.kind.test`)
+                    kind: Rule
+                    priority: 10
+                    services: [{name: revproxy-service, port: 80}]
+
+        - name: Check the portal and Fence status from the laptop
+          ansible.builtin.uri:
+            url: 'http://gen3.kind.test{{ item }}'
+            status_code: 200
+          loop: ['/', '/user/_status']
+          register: app_http_check
+          until: app_http_check.status | default(0) == 200
+          retries: 12
+          delay: 5
+
+      rescue:
+        - name: Identify the failed initialization task without its private arguments
+          ansible.builtin.debug:
+            msg: 'Failed task: {{ ansible_failed_task.name | default("unknown") }}'
+
+        - name: Collect safe pod status without configuration or credentials
+          ansible.builtin.command: kubectl get pods -n gen3 -o wide
+          register: app_pod_status
+          changed_when: false
+          failed_when: false
+
+        - name: Show failed deployment status
+          ansible.builtin.debug:
+            var: app_pod_status.stdout_lines
+
+        - name: Stop without deleting data or resetting passwords
+          ansible.builtin.fail:
+            msg: Gen3 initialization failed. Inspect failed pod/init-container logs privately; saved credentials and persistent data are retained.
+
+    - name: Explain the next acceptance checks
+      ansible.builtin.debug:
+        msg:
+          - 'Open http://gen3.kind.test and log in using mongoose / mangoose.'
+          - 'Private Helm values and passwords are in {{ state_dir }}; do not commit them.'
+          - 'Dictionary and empty exploration indices are installed. No patient or file records were fabricated.'
+          - 'Create program training / project demo, submit metadata, then run 03-refresh-search.yaml to index it.'
+          - 'Portal login, API credential generation and an actual file round trip still require acceptance testing.'

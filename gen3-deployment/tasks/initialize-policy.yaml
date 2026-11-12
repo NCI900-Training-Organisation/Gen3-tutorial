@@ -1,0 +1,46 @@
+---
+# Reuse a successful Job for the same policy; never hide a failed initialization.
+- name: Read the installed Fence workload privately
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: gen3
+    name: fence-deployment
+  register: policy_fence
+  no_log: true
+
+- name: Build a one-shot policy sync from the installed Fence configuration
+  ansible.builtin.command:
+    argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/make-initialization-job.py']
+    stdin: >-
+      {{ {'kind': 'policy', 'deployment': policy_fence.resources[0],
+          'policy': app_runtime["values"].fence.USER_YAML | to_json,
+          'run_id': initialization_run_id} | to_json }}
+  register: policy_job_json
+  changed_when: false
+  no_log: true
+
+- name: Apply the policy initialization Job
+  kubernetes.core.k8s:
+    definition: '{{ policy_job_json.stdout | from_json }}'
+  no_log: true
+
+- name: Wait for policy initialization to complete or fail
+  kubernetes.core.k8s_info:
+    api_version: batch/v1
+    kind: Job
+    namespace: gen3
+    name: '{{ (policy_job_json.stdout | from_json).metadata.name }}'
+  register: policy_job
+  until: >-
+    policy_job is succeeded and policy_job.resources | default([]) | length == 1 and
+    (policy_job.resources[0].get('status', {}).get('succeeded', 0) | int > 0 or
+     policy_job.resources[0].get('status', {}).get('failed', 0) | int > 0)
+  retries: 65
+  delay: 10
+  no_log: true
+
+- name: Require successful authorization initialization
+  ansible.builtin.assert:
+    that: policy_job.resources[0].get('status', {}).get('succeeded', 0) | int > 0
+    fail_msg: Policy synchronization failed. Inspect the retained gen3-usersync Job logs. Use initialization_run_id to deliberately retry after fixing the error.

@@ -1,0 +1,86 @@
+---
+- name: Read LDAP administrator credential file
+  ansible.builtin.slurp:
+    src: '{{ state_dir }}/ldap.env'
+  register: ldap_credentials
+  no_log: true
+
+- name: Extract LDAP administrator password
+  ansible.builtin.set_fact:
+    ldap_admin_password: "{{ (ldap_credentials.content | b64decode).splitlines() | select('match', '^LDAP_ADMIN_PASSWORD=') | first | regex_replace('^LDAP_ADMIN_PASSWORD=', '') }}"
+  no_log: true
+
+# -y reads the password from stdin so it does not appear in docker arguments.
+- name: Wait for local LDAP administrator bind
+  ansible.builtin.command:
+    argv: [docker, exec, -i, gen3-ldap, ldapwhoami, -x, -H, 'ldap://gen3-ldap:389', -D, '{{ admin_dn }}', -y, /dev/stdin]
+    stdin: '{{ ldap_admin_password }}'
+    stdin_add_newline: false
+  register: ldap_ready
+  until: ldap_ready.rc == 0
+  retries: 60
+  delay: 2
+  changed_when: false
+  no_log: true
+
+- name: Load individual training entries
+  ansible.builtin.include_tasks: local-ldap-entry.yaml
+  loop: "{{ lookup('file', playbook_dir + '/manifests/ldap-training.ldif').split('\n\n') }}"
+  loop_control:
+    loop_var: ldap_entry
+    label: "{{ ldap_entry.splitlines() | select('match', '^dn: ') | first }}"
+
+# The image defaults to self-only reads. Grant authenticated users access to
+# group membership, without changing the password ACL or other subtree access.
+- name: Discover training database and access rules through local root identity
+  ansible.builtin.command:
+    argv: [docker, exec, gen3-ldap, ldapsearch, -Q, -Y, EXTERNAL, -H, 'ldapi:///', -LLL, -o, ldif-wrap=no, -b, 'cn=config', '(olcSuffix=dc=gen3,dc=kind,dc=test)', dn, olcAccess]
+  register: database_acl
+  changed_when: false
+
+- name: Require exactly one training database
+  ansible.builtin.assert:
+    that: "database_acl.stdout_lines | select('match', '^dn: ') | list | length == 1"
+
+- name: Allow authenticated group searches while preserving existing rules
+  ansible.builtin.command:
+    argv: [docker, exec, -i, gen3-ldap, ldapmodify, -Q, -Y, EXTERNAL, -H, 'ldapi:///']
+    stdin: |
+      {{ database_acl.stdout_lines | select('match', '^dn: ') | first }}
+      changetype: modify
+      add: olcAccess
+      olcAccess: {2}to dn.subtree="ou=Groups,dc=gen3,dc=kind,dc=test" by dn.exact="{{ admin_dn }}" manage by users read by * none
+  when: "'to dn.subtree=\"ou=Groups,dc=gen3,dc=kind,dc=test\"' not in database_acl.stdout"
+  changed_when: true
+
+- name: Verify mongoose password
+  ansible.builtin.command:
+    argv: [docker, exec, -i, gen3-ldap, ldapwhoami, -x, -H, 'ldap://gen3-ldap:389', -D, '{{ user_dn }}', -y, /dev/stdin]
+    stdin: '{{ mongoose_password }}'
+    stdin_add_newline: false
+  changed_when: false
+  no_log: true
+
+- name: Search for mongoose group membership
+  ansible.builtin.command:
+    argv: [docker, exec, -i, gen3-ldap, ldapsearch, -x, -H, 'ldap://gen3-ldap:389', -D, '{{ user_dn }}', -y, /dev/stdin, -b, 'ou=Groups,dc=gen3,dc=kind,dc=test', '(&(objectClass=posixGroup)(cn=gen3-users)(memberUid=mongoose))', cn, memberUid]
+    stdin: '{{ mongoose_password }}'
+    stdin_add_newline: false
+  register: group_search
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: Report a failed group search without exposing command stdin
+  ansible.builtin.fail:
+    msg: >-
+      LDAP group search returned {{ group_search.rc }}.
+      {{ group_search.stderr | default('') }}
+      {{ group_search.stdout | default('') }}
+  when: group_search.rc != 0
+
+- name: Require expected group membership
+  ansible.builtin.assert:
+    that:
+      - "'cn: gen3-users' in group_search.stdout_lines"
+      - "'memberUid: mongoose' in group_search.stdout_lines"

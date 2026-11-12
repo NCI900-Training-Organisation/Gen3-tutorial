@@ -1,0 +1,38 @@
+---
+# S3 credentials stay private even though local transport is HTTP.
+- name: Read MinIO credentials
+  ansible.builtin.slurp:
+    src: '{{ state_dir }}/minio.env'
+  register: minio_credentials
+  no_log: true
+- name: Configure mc alias with protected output
+  ansible.builtin.command:
+    argv:
+    - mc
+    - alias
+    - set
+    - gen3-local
+    - '{{ minio_endpoint | default(''http://localhost:9000'') }}'
+    - '{{ (minio_credentials.content | b64decode).splitlines() | select(''match'',
+      ''^MINIO_ROOT_USER='') | first | regex_replace(''^MINIO_ROOT_USER='', '''')
+      }}'
+    - '{{ (minio_credentials.content | b64decode).splitlines() | select(''match'',
+      ''^MINIO_ROOT_PASSWORD='') | first | regex_replace(''^MINIO_ROOT_PASSWORD='',
+      '''') }}'
+  no_log: true
+  changed_when: true
+- name: Wait for authenticated MinIO listing
+  ansible.builtin.command: mc ls gen3-local
+  register: minio_ready
+  until: minio_ready.rc == 0
+  retries: 30
+  delay: 2
+  changed_when: false
+- name: Ensure upload and configuration buckets exist
+  ansible.builtin.command: mc mb --ignore-existing 'gen3-local/gen3-local-{{ item
+    }}'
+  loop:
+  - upload
+  - dictionary
+  - user-yaml
+  changed_when: true

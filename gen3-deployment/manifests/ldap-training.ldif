@@ -1,0 +1,27 @@
+# Local training credentials: mongoose / mangoose.
+dn: ou=people,dc=gen3,dc=kind,dc=test
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=Groups,dc=gen3,dc=kind,dc=test
+objectClass: organizationalUnit
+ou: Groups
+
+dn: uid=mongoose,ou=people,dc=gen3,dc=kind,dc=test
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: mongoose
+sn: mongoose
+uid: mongoose
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/mongoose
+gecos: mongoose
+mail: mongoose@gen3.kind.test
+userPassword: {SSHA}nx0dAG0MoWZthcojWNRUF6A5N4R3YrJAIk4Lrg==
+
+dn: cn=gen3-users,ou=Groups,dc=gen3,dc=kind,dc=test
+objectClass: posixGroup
+cn: gen3-users
+gidNumber: 10001
+memberUid: mongoose

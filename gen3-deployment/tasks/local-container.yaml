@@ -1,0 +1,33 @@
+---
+# Adopt existing containers without changing ports, mounts, or credentials.
+- name: Inspect service container
+  ansible.builtin.command: docker container inspect '{{ container_spec.name }}'
+  register: service_container
+  failed_when: service_container.rc not in [0, 1]
+  changed_when: false
+
+- name: Require existing service container to use plain training protocols
+  ansible.builtin.assert:
+    that:
+      - "'gen3-minio-certs' not in service_container.stdout"
+      - "'LDAP_TLS=true' not in service_container.stdout"
+    fail_msg: Existing container uses TLS. This playbook will not delete it or its data; deliberately migrate or recreate it before using the plain HTTP profile.
+  when: service_container.rc == 0
+  no_log: true
+
+- name: Create persistent service volumes
+  ansible.builtin.command: docker volume create '{{ item }}'
+  loop: '{{ container_spec.volumes }}'
+  when: service_container.rc != 0
+  changed_when: true
+
+- name: Create missing service container without starting it
+  ansible.builtin.command:
+    argv: "{{ ['docker', 'create', '--name', container_spec.name, '--network', cluster_name] + container_spec.args + [container_spec.image] + container_spec.command }}"
+  when: service_container.rc != 0
+  changed_when: true
+
+- name: Start new or stopped service container
+  ansible.builtin.command: docker start '{{ container_spec.name }}'
+  when: service_container.rc != 0 or not (service_container.stdout | from_json)[0].State.Running
+  changed_when: true

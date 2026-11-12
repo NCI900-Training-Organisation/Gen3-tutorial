@@ -1,0 +1,9 @@
+# Talos 1.14 uses KubeNodeConfig for node labels and taints.
+# Applied at cluster creation, before workloads need to schedule.
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  elasticnode: iselasticnode
+taints:
+  node-role.kubernetes.io/control-plane:
+    $patch: delete

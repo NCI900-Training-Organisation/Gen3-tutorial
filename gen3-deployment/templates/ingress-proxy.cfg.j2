@@ -1,0 +1,14 @@
+# Forward laptop HTTP to the node ingress.
+global
+    log stdout format raw local0
+    maxconn 1024
+defaults
+    mode tcp
+    timeout connect 10s
+    timeout client 60s
+    timeout server 60s
+frontend http
+    bind :8080
+    default_backend ingress_http
+backend ingress_http
+    server ingress {{ ingress_ip }}:80 check

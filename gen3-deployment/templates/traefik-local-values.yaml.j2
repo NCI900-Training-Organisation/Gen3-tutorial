@@ -1,0 +1,17 @@
+# A single HTTP entry point on the schedulable control-plane node.
+deployment: {kind: DaemonSet}
+service: {enabled: false}
+ingressClass: {enabled: true, isDefaultClass: true}
+nodeSelector: {node-role.kubernetes.io/control-plane: ""}
+tolerations:
+  - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+  - {key: node-role.kubernetes.io/master, operator: Exists, effect: NoSchedule}
+ports:
+  web: {port: 8000, hostPort: 80}
+  websecure: null
+resources:
+  requests: {cpu: 100m, memory: 64Mi}
+  limits: {memory: 256Mi}
+providers:
+  kubernetesCRD: {enabled: true}
+  kubernetesIngress: {enabled: true}

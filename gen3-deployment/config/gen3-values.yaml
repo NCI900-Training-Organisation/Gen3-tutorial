@@ -1,0 +1,613 @@
+# Local HTTP training profile. Tube is pinned to a verified multi-architecture manifest.
+arborist:
+  autoscaling:
+    enabled: false
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  postgres:
+    database: arborist
+    dbCreate: false
+    host: gen3-postgres
+    port: '5432'
+    username: arborist_gen3
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+etl:
+  enabled: true
+  esEndpoint: gen3-elasticsearch
+  esGarbageCollect:
+    enabled: false
+  etlForced: false
+  etlMapping:
+    mappings:
+    - aggregated_props:
+      - fn: count
+        name: _blood_count
+        path: bloods
+      - fn: count
+        name: _urine_count
+        path: urines
+      - fn: count
+        name: _dna_count
+        path: bloods.dnas
+      - fn: count
+        name: _seqrun_count
+        path: bloods.dnas.seqruns
+      doc_type: patient
+      name: training_patient
+      props:
+      - name: submitter_id
+      - name: project_id
+      - name: patient_id
+      - name: _patient_id
+        src: id
+      root: patient
+      type: aggregator
+    - category: data_file
+      doc_type: file
+      injecting_props:
+        patient:
+          props:
+          - fn: set
+            name: _patient_id
+            src: id
+          - name: project_id
+      name: training_file
+      props:
+      - name: object_id
+      - name: md5sum
+      - name: file_name
+      - name: file_size
+      - name: data_category
+      - name: data_format
+      - name: data_type
+      - name: state
+      - name: seqrun_id
+      - name: dna_id
+      root: None
+      target_nodes:
+      - name: seqrun
+        path: dnas.bloods.patients
+      type: collector
+  image:
+    spark:
+      tag: '2025.08'
+    tube:
+      tag: master
+      digest: sha256:809c8451a2230976965fb3592f9c6ce1f5d70a23955a9da2fdef16b73610303d
+  legacySupport: false
+  resources:
+    spark:
+      limits:
+        cpu: '1'
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    tube:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  schedule: 0 3 * * *
+  suspendCronjob: true
+fence:
+  FENCE_CONFIG:
+    AUTHLIB_INSECURE_TRANSPORT: true
+    BASE_URL: http://gen3.kind.test/user
+    DATA_UPLOAD_BUCKET: gen3-local-upload
+    DEFAULT_LOGIN_IDP: generic_oidc_idp
+    ENABLE_AUDIT_LOGS:
+      login: false
+      presigned_url: false
+    ENABLE_S3_UPLOAD: true
+    LOGIN_OPTIONS:
+    - idp: generic_oidc_idp
+      name: Training LDAP
+    OPENID_CONNECT:
+      generic_oidc_idp:
+        client_id: gen3
+        discovery_url: http://gen3.kind.test/dex/.well-known/openid-configuration
+        email_field: email
+        name: Training LDAP
+        redirect_url: http://gen3.kind.test/user/login/generic_oidc_idp/login
+        scope: openid email profile groups
+        user_id_field: preferred_username
+    S3_BUCKETS:
+      gen3-local-upload:
+        cred: CRED1
+        endpoint_url: http://minio.gen3.kind.test:9000
+    SESSION_COOKIE_SECURE: false
+  USER_YAML: "authz:\n  anonymous_policies: []\n  all_users_policies: []\n  groups:\n\
+    \  - name: training-admins\n    users:\n    - mongoose\n    - training\n    policies:\n\
+    \    - training-admin\n  resources:\n  - name: programs\n    subresources:\n \
+    \   - name: training\n      subresources:\n      - name: projects\n        subresources:\n\
+    \        - name: demo\n  - name: services\n    subresources:\n    - name: sheepdog\n\
+    \      subresources:\n      - name: submission\n        subresources:\n      \
+    \  - name: program\n        - name: project\n    - name: indexd\n      subresources:\n\
+    \      - name: admin\n  - name: data_file\n  policies:\n  - id: training-admin\n\
+    \    role_ids:\n    - training-admin\n    resource_paths:\n    - /programs\n \
+    \   - /services\n    - /data_file\n    - /programs/training/projects/demo\n  roles:\n\
+    \  - id: training-admin\n    permissions:\n    - id: all-training-actions\n  \
+    \    action:\n        service: '*'\n        method: '*'\nusers:\n  mongoose:\n\
+    \    admin: true\n    policies:\n    - training-admin\n    tags:\n      name:\
+    \ mongoose\n      email: mongoose@gen3.kind.test\n  training:\n    admin: true\n\
+    \    policies:\n    - training-admin\n    tags:\n      name: training\n      email:\
+    \ training@gen3.kind.test\n"
+  autoscaling:
+    enabled: false
+  enabled: true
+  env:
+  - name: GEN3_UWSGI_TIMEOUT
+    valueFrom:
+      configMapKeyRef:
+        key: uwsgi-timeout
+        name: manifest-global
+        optional: true
+  - name: DD_AGENT_HOST
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: AWS_STS_REGIONAL_ENDPOINTS
+    value: regional
+  - name: PYTHONPATH
+    value: /var/www/fence
+  - name: GEN3_DEBUG
+    value: 'False'
+  - name: PGHOST
+    valueFrom:
+      secretKeyRef:
+        key: host
+        name: fence-dbcreds
+        optional: false
+  - name: PGUSER
+    valueFrom:
+      secretKeyRef:
+        key: username
+        name: fence-dbcreds
+        optional: false
+  - name: PGPASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: password
+        name: fence-dbcreds
+        optional: false
+  - name: PGDB
+    valueFrom:
+      secretKeyRef:
+        key: database
+        name: fence-dbcreds
+        optional: false
+  - name: DBREADY
+    valueFrom:
+      secretKeyRef:
+        key: dbcreated
+        name: fence-dbcreds
+        optional: false
+  - name: DB
+    value: postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)
+  - name: INDEXD_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: fence
+        name: indexd-service-creds
+  - name: gen3Env
+    valueFrom:
+      configMapKeyRef:
+        key: hostname
+        name: manifest-global
+  - name: AWS_CONFIG_FILE
+    value: /etc/gen3-local-aws/config
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  postgres:
+    database: fence
+    dbCreate: false
+    host: gen3-postgres
+    port: '5432'
+    username: fence_gen3
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+  serviceAccount:
+    annotations: null
+  usersync:
+    usersync: false
+  volumeMounts:
+  - mountPath: /var/www/fence/local_settings.py
+    name: old-config-volume
+    readOnly: true
+    subPath: local_settings.py
+  - mountPath: /var/www/fence/fence_credentials.json
+    name: json-secret-volume
+    readOnly: true
+    subPath: fence_credentials.json
+  - mountPath: /var/www/fence/creds.json
+    name: creds-volume
+    readOnly: true
+    subPath: creds.json
+  - mountPath: /var/www/fence/config_helper.py
+    name: config-helper
+    readOnly: true
+    subPath: config_helper.py
+  - mountPath: /fence/fence/static/img/logo.svg
+    name: logo-volume
+    readOnly: true
+    subPath: logo.svg
+  - mountPath: /fence/fence/static/privacy_policy.md
+    name: privacy-policy
+    readOnly: true
+    subPath: privacy_policy.md
+  - mountPath: /var/www/fence/fence-config-secret.yaml
+    name: config-volume
+    readOnly: true
+    subPath: fence-config.yaml
+  - mountPath: /var/www/fence/yaml_merge.py
+    name: yaml-merge
+    readOnly: true
+    subPath: yaml_merge.py
+  - mountPath: /var/www/fence/fence_google_app_creds_secret.json
+    name: fence-google-app-creds-secret-volume
+    readOnly: true
+    subPath: fence_google_app_creds_secret.json
+  - mountPath: /var/www/fence/fence_google_storage_creds_secret.json
+    name: fence-google-storage-creds-secret-volume
+    readOnly: true
+    subPath: fence_google_storage_creds_secret.json
+  - mountPath: /tmp/keys/readonly/jwt_private_key.pem
+    name: fence-jwt-keys-readonly
+    readOnly: true
+    subPath: jwt_private_key.pem
+  - mountPath: /var/www/fence/fence-config-public.yaml
+    name: config-volume-public
+    readOnly: true
+    subPath: fence-config-public.yaml
+  - mountPath: /etc/gen3-local-aws
+    name: aws-config
+    readOnly: true
+  volumes:
+  - name: old-config-volume
+    secret:
+      secretName: fence-secret
+  - name: json-secret-volume
+    secret:
+      optional: true
+      secretName: fence-json-secret
+  - name: creds-volume
+    secret:
+      secretName: fence-creds
+  - configMap:
+      name: config-helper
+      optional: true
+    name: config-helper
+  - configMap:
+      name: logo-config
+    name: logo-volume
+  - name: config-volume
+    secret:
+      secretName: fence-config
+  - name: fence-google-app-creds-secret-volume
+    secret:
+      secretName: fence-google-app-creds-secret
+  - name: fence-google-storage-creds-secret-volume
+    secret:
+      secretName: fence-google-storage-creds-secret
+  - name: fence-jwt-keys-readonly
+    secret:
+      secretName: fence-jwt-keys
+  - configMap:
+      name: privacy-policy
+    name: privacy-policy
+  - configMap:
+      name: fence-yaml-merge
+      optional: false
+    name: yaml-merge
+  - configMap:
+      name: manifest-fence
+      optional: true
+    name: config-volume-public
+  - configMap:
+      name: gen3-training-aws-config
+    name: aws-config
+global:
+  aws:
+    enabled: false
+    externalSecrets:
+      enabled: false
+  cookieDomain: gen3.kind.test
+  dev: false
+  dictionaryUrl: http://dictionary-service.gen3.svc.cluster.local/dictionary.json
+  environment: gen3-training
+  externalSecrets:
+    deploy: false
+  fenceURL: http://gen3.kind.test/user
+  frontendRoot: portal
+  hostname: gen3.kind.test
+  localExternalDatabaseReady: true
+  netPolicy:
+    enabled: false
+  portalApp: gitops
+  postgres:
+    dbCreate: false
+    externalSecret: postgres-dbcreds
+    master:
+      database: postgres
+      host: gen3-postgres
+      port: '5432'
+  publicDataSets: false
+  topologySpread:
+    enabled: false
+guppy:
+  authFilterField: auth_resource_path
+  autoscaling:
+    enabled: false
+  configIndex: training_array-config
+  enableEncryptWhitelist: false
+  enabled: true
+  esEndpoint: gen3-elasticsearch:9200
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  indices:
+  - index: training_patient
+    type: patient
+  - index: training_file
+    type: file
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+indexd:
+  autoscaling:
+    enabled: false
+  enabled: true
+  env:
+  - name: ARBORIST
+    value: 'true'
+  - name: GEN3_DEBUG
+    value: 'False'
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  postgres:
+    database: indexd
+    dbCreate: false
+    host: gen3-postgres
+    port: '5432'
+    username: indexd_gen3
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+  volumeMounts:
+  - mountPath: /etc/uwsgi/uwsgi.ini
+    name: uwsgi-config
+    subPath: uwsgi.ini
+  - mountPath: /var/www/indexd/local_settings.py
+    name: config-volume
+    readOnly: true
+    subPath: local_settings.py
+  - mountPath: /indexd/deployment/wsgi/gunicorn.conf.py
+    name: gunicorn-conf
+    readOnly: true
+    subPath: gunicorn.conf.py
+  volumes:
+  - configMap:
+      name: indexd-uwsgi
+    name: uwsgi-config
+  - name: config-volume
+    secret:
+      secretName: indexd-settings
+  - configMap:
+      name: gunicorn-conf
+    name: gunicorn-conf
+peregrine:
+  autoscaling:
+    enabled: false
+  enabled: true
+  env: []
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  postgres:
+    database: sheepdog
+    dbCreate: false
+    host: gen3-postgres
+    port: '5432'
+    username: peregrine_gen3
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+  volumeMounts:
+  - mountPath: /var/www/peregrine/settings.py
+    name: config-volume
+    readOnly: true
+    subPath: settings.py
+  - mountPath: /peregrine/bin/settings.py
+    name: config-volume
+    readOnly: true
+    subPath: settings.py
+  volumes:
+  - emptyDir: {}
+    name: shared-data
+  - name: config-volume
+    secret:
+      secretName: peregrine-secret
+portal:
+  autoscaling:
+    enabled: false
+  enabled: true
+  gitops:
+    gen3Bundle: commons
+    json: "{\n  \"graphql\": {\n    \"boardCounts\": [\n      {\n        \"graphql\"\
+      : \"_patient_count\",\n        \"name\": \"Patient\",\n        \"plural\": \"\
+      Patients\"\n      },\n      {\n        \"graphql\": \"_blood_count\",\n    \
+      \    \"name\": \"Blood sample\",\n        \"plural\": \"Blood samples\"\n  \
+      \    },\n      {\n        \"graphql\": \"_seqrun_count\",\n        \"name\"\
+      : \"Sequencing run\",\n        \"plural\": \"Sequencing runs\"\n      }\n  \
+      \  ],\n    \"chartCounts\": [\n      {\n        \"graphql\": \"_patient_count\"\
+      ,\n        \"name\": \"Patient\"\n      }\n    ],\n    \"projectDetails\": \"\
+      boardCounts\"\n  },\n  \"components\": {\n    \"appName\": \"Gen3 Local Training\"\
+      ,\n    \"index\": {\n      \"introduction\": {\n        \"heading\": \"Gen3\
+      \ Local Training\",\n        \"text\": \"Local Gen3 training. Program training;\
+      \ project demo. Submit metadata, explore indexed records and transfer files\
+      \ using API credentials.\",\n        \"link\": \"/submission\"\n      },\n \
+      \     \"buttons\": [\n        {\n          \"name\": \"Define Data Field\",\n\
+      \          \"icon\": \"data-field-define\",\n          \"body\": \"The Generic\
+      \ Data Commons define the data in a general way. Please study the dictionary\
+      \ before you start browsing.\",\n          \"link\": \"/DD\",\n          \"\
+      label\": \"Learn more\"\n        },\n        {\n          \"name\": \"Explore\
+      \ Data\",\n          \"icon\": \"data-explore\",\n          \"body\": \"The\
+      \ Exploration Page gives you insights and a clear overview under selected factors.\"\
+      ,\n          \"link\": \"/explorer\",\n          \"label\": \"Explore data\"\
+      \n        },\n        {\n          \"name\": \"Access Data\",\n          \"\
+      icon\": \"data-access\",\n          \"body\": \"Use our selected tool to filter\
+      \ out the data you need.\",\n          \"link\": \"/query\",\n          \"label\"\
+      : \"Query data\"\n        },\n        {\n          \"name\": \"Submit Data\"\
+      ,\n          \"icon\": \"data-submit\",\n          \"body\": \"Submit Data based\
+      \ on the dictionary.\",\n          \"link\": \"/submission\",\n          \"\
+      label\": \"Submit data\"\n        }\n      ]\n    },\n    \"navigation\": {\n\
+      \      \"title\": \"Generic Data Commons\",\n      \"items\": [\n        {\n\
+      \          \"icon\": \"dictionary\",\n          \"link\": \"/DD\",\n       \
+      \   \"color\": \"#a2a2a2\",\n          \"name\": \"Dictionary\"\n        },\n\
+      \        {\n          \"icon\": \"exploration\",\n          \"link\": \"/explorer\"\
+      ,\n          \"color\": \"#a2a2a2\",\n          \"name\": \"Exploration\"\n\
+      \        },\n        {\n          \"icon\": \"query\",\n          \"link\":\
+      \ \"/query\",\n          \"color\": \"#a2a2a2\",\n          \"name\": \"Query\"\
+      \n        },\n        {\n          \"icon\": \"profile\",\n          \"link\"\
+      : \"/identity\",\n          \"color\": \"#a2a2a2\",\n          \"name\": \"\
+      Profile\"\n        }\n      ]\n    },\n    \"topBar\": {\n      \"items\": [\n\
+      \        {\n          \"icon\": \"upload\",\n          \"link\": \"/submission\"\
+      ,\n          \"name\": \"Submit Data\"\n        },\n        {\n          \"\
+      link\": \"https://docs.gen3.org/gen3-resources/user-guide/\",\n          \"\
+      name\": \"Documentation\"\n        }\n      ]\n    },\n    \"login\": {\n  \
+      \    \"title\": \"Gen3 Local Training\",\n      \"subTitle\": \"Small local\
+      \ training dataset\",\n      \"text\": \"Sign in with the local LDAP account\
+      \ mongoose. Access is defined by the training user policy.\",\n      \"contact\"\
+      : \"If you have any questions about access or the registration process, please\
+      \ contact \",\n      \"email\": \"support@gen3.org\"\n    },\n    \"certs\"\
+      : {},\n    \"footerLogos\": [\n      {\n        \"src\": \"/src/img/gen3.png\"\
+      ,\n        \"href\": \"https://ctds.uchicago.edu/gen3\",\n        \"alt\": \"\
+      Gen3 Data Commons\"\n      },\n      {\n        \"src\": \"/src/img/createdby.png\"\
+      ,\n        \"href\": \"https://ctds.uchicago.edu/\",\n        \"alt\": \"Center\
+      \ for Translational Data Science at the University of Chicago\"\n      }\n \
+      \   ]\n  },\n  \"requiredCerts\": [],\n  \"featureFlags\": {\n    \"explorer\"\
+      : true,\n    \"noIndex\": true,\n    \"analysis\": false,\n    \"discovery\"\
+      : false,\n    \"discoveryUseAggMDS\": false,\n    \"studyRegistration\": false\n\
+      \  },\n  \"explorerConfig\": [\n    {\n      \"tabTitle\": \"Patients\",\n \
+      \     \"charts\": {\n        \"project_id\": {\n          \"chartType\": \"\
+      count\",\n          \"title\": \"Projects\"\n        },\n        \"_patient_id\"\
+      : {\n          \"chartType\": \"count\",\n          \"title\": \"Patients\"\n\
+      \        }\n      },\n      \"filters\": {\n        \"tabs\": [\n          {\n\
+      \            \"title\": \"Patient\",\n            \"fields\": [\n          \
+      \    \"project_id\",\n              \"patient_id\"\n            ]\n        \
+      \  }\n        ]\n      },\n      \"table\": {\n        \"enabled\": true,\n\
+      \        \"fields\": [\n          \"patient_id\",\n          \"submitter_id\"\
+      ,\n          \"project_id\",\n          \"_blood_count\",\n          \"_seqrun_count\"\
+      \n        ]\n      },\n      \"dropdowns\": {},\n      \"buttons\": [],\n  \
+      \    \"guppyConfig\": {\n        \"dataType\": \"patient\",\n        \"nodeCountTitle\"\
+      : \"Patients\",\n        \"fieldMapping\": [\n          {\n            \"field\"\
+      : \"patient_id\",\n            \"name\": \"Patient ID\"\n          },\n    \
+      \      {\n            \"field\": \"project_id\",\n            \"name\": \"Project\"\
+      \n          }\n        ],\n        \"accessibleFieldCheckList\": [\n       \
+      \   \"_patient_id\"\n        ],\n        \"accessibleValidationField\": \"_patient_id\"\
+      \n      }\n    },\n    {\n      \"tabTitle\": \"Files\",\n      \"charts\":\
+      \ {\n        \"data_format\": {\n          \"chartType\": \"bar\",\n       \
+      \   \"title\": \"Data format\"\n        }\n      },\n      \"filters\": {\n\
+      \        \"tabs\": [\n          {\n            \"title\": \"Sequencing files\"\
+      ,\n            \"fields\": [\n              \"project_id\",\n              \"\
+      data_category\",\n              \"data_type\",\n              \"data_format\"\
+      \n            ]\n          }\n        ]\n      },\n      \"table\": {\n    \
+      \    \"enabled\": true,\n        \"fields\": [\n          \"file_name\",\n \
+      \         \"file_size\",\n          \"data_format\",\n          \"seqrun_id\"\
+      \n        ]\n      },\n      \"dropdowns\": {},\n      \"buttons\": [],\n  \
+      \    \"guppyConfig\": {\n        \"dataType\": \"file\",\n        \"nodeCountTitle\"\
+      : \"Files\",\n        \"fieldMapping\": [\n          {\n            \"field\"\
+      : \"file_name\",\n            \"name\": \"File name\"\n          }\n       \
+      \ ],\n        \"accessibleFieldCheckList\": [\n          \"object_id\"\n   \
+      \     ],\n        \"accessibleValidationField\": \"object_id\"\n      }\n  \
+      \  }\n  ]\n}"
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  nodeOptions: --max-old-space-size=1536
+  podSecurityContext:
+    fsGroup: 1000
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '2'
+      memory: 3Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  strategy:
+    rollingUpdate: null
+    type: Recreate
+revproxy:
+  autoscaling:
+    enabled: false
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  ingress:
+    enabled: false
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi
+sheepdog:
+  autoscaling:
+    enabled: false
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    tag: '2025.08'
+  postgres:
+    database: sheepdog
+    dbCreate: false
+    host: gen3-postgres
+    port: '5432'
+    username: sheepdog_gen3
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 512Mi
+    requests:
+      cpu: 25m
+      memory: 128Mi

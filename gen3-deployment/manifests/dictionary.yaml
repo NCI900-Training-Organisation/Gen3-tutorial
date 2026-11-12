@@ -1,0 +1,42 @@
+# The supplied dictionary is served unchanged over cluster-only HTTP.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: dictionary, namespace: gen3}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: dictionary}
+  template:
+    metadata:
+      labels: {app: dictionary}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: dictionary
+          image: python:3.13-alpine
+          command: [python, -m, http.server, '8080', --directory, /dictionary]
+          ports: [{name: http, containerPort: 8080}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          readinessProbe:
+            httpGet: {path: /dictionary.json, port: http}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 64Mi}
+          volumeMounts:
+            - {name: dictionary, mountPath: /dictionary, readOnly: true}
+      volumes:
+        - name: dictionary
+          configMap: {name: gen3-dictionary}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: dictionary-service, namespace: gen3}
+spec:
+  selector: {app: dictionary}
+  ports: [{name: http, port: 80, targetPort: http}]

@@ -1,0 +1,57 @@
+apiVersion: v2
+appVersion: master
+dependencies:
+- condition: arborist.enabled
+  name: arborist
+  repository: file://../arborist
+  version: 0.1.38
+- name: common
+  repository: file://../common
+  version: 0.1.40
+- condition: fence.enabled
+  name: fence
+  repository: file://../fence
+  version: 0.1.83
+- condition: indexd.enabled
+  name: indexd
+  repository: file://../indexd
+  version: 0.1.53
+- condition: peregrine.enabled
+  name: peregrine
+  repository: file://../peregrine
+  version: 0.1.46
+- condition: portal.enabled
+  name: portal
+  repository: file://../portal
+  version: 0.1.66
+- condition: revproxy.enabled
+  name: revproxy
+  repository: file://../revproxy
+  version: 0.1.75
+- condition: sheepdog.enabled
+  name: sheepdog
+  repository: file://../sheepdog
+  version: 0.1.49
+- condition: etl.enabled
+  name: etl
+  repository: file://../etl
+  version: 0.1.25
+- condition: guppy.enabled
+  name: guppy
+  repository: file://../guppy
+  version: 0.1.42
+description: Helm chart to deploy Gen3 Data Commons
+maintainers:
+- email: ahilt@uchicago.edu
+  name: ahilt
+- email: ajoa@uchicago.edu
+  name: ajoaugustine
+- email: emalinowski@uchicago.edu
+  name: emalinowski
+- email: elisemcastle@uchicago.edu
+  name: EliseCastle23
+- email: qureshi@uchicago.edu
+  name: jawadqur
+name: gen3
+type: application
+version: 0.3.103

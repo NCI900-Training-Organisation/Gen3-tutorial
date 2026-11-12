@@ -1,0 +1,33 @@
+# Apply in default namespace; delete after checking logs and PVC binding.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-storage-check
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: csi-cinder-sc-delete
+  resources:
+    requests:
+      storage: 16Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: local-storage-check
+spec:
+  restartPolicy: Never
+  containers:
+  - name: check
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -ec
+    - echo local-storage-ok > /data/check; cat /data/check; sleep 3600
+    volumeMounts:
+    - name: data
+      mountPath: /data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: local-storage-check

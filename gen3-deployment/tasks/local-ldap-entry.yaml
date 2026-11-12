@@ -1,0 +1,46 @@
+---
+# Query before adding: reruns preserve accounts and recover partial initial loads.
+- name: Search for existing training entry
+  ansible.builtin.command:
+    argv: [docker, exec, -i, gen3-ldap, ldapsearch, -x, -H, 'ldap://gen3-ldap:389', -D, '{{ admin_dn }}', -y, /dev/stdin, -b, "{{ ldap_entry.splitlines() | select('match', '^dn: ') | first | regex_replace('^dn: ', '') }}", -s, base, '(objectClass=*)', dn]
+    stdin: '{{ ldap_admin_password }}'
+    stdin_add_newline: false
+  register: entry_search
+  # 32 means the DN does not exist yet; it is an expected result.
+  failed_when: false
+  until: entry_search.rc | default(-1) in [0, 32]
+  retries: 3
+  delay: 2
+  ignore_errors: true
+  changed_when: false
+  no_log: true
+
+# Do not display the registered result: its invocation contains the password.
+- name: Explain a failed LDAP lookup without exposing credentials
+  ansible.builtin.fail:
+    msg: >-
+      LDAP lookup failed for {{ ldap_entry.splitlines() | select('match', '^dn: ') | first }}.
+      Exit code: {{ entry_search.rc | default('unknown') }}.
+      {{ entry_search.stderr | default('No server error returned') | replace(ldap_admin_password, '[redacted]') }}
+  when: entry_search.rc | default(-1) not in [0, 32]
+
+- name: Add missing training entry
+  when: entry_search.rc == 32
+  block:
+    - name: Write private temporary LDIF
+      ansible.builtin.copy:
+        dest: '{{ state_dir }}/ldap-entry.ldif'
+        content: "{{ ldap_entry ~ '\n' }}"
+        mode: '0600'
+
+    - name: Copy entry into LDAP container
+      ansible.builtin.command: docker cp '{{ state_dir }}/ldap-entry.ldif' gen3-ldap:/tmp/ldap-entry.ldif
+      changed_when: true
+
+    - name: Load missing entry without changing existing passwords
+      ansible.builtin.command:
+        argv: [docker, exec, -i, gen3-ldap, ldapadd, -x, -H, 'ldap://gen3-ldap:389', -D, '{{ admin_dn }}', -y, /dev/stdin, -f, /tmp/ldap-entry.ldif]
+        stdin: '{{ ldap_admin_password }}'
+        stdin_add_newline: false
+      no_log: true
+      changed_when: true

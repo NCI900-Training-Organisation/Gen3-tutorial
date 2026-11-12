@@ -1,0 +1,49 @@
+---
+- name: Read existing CoreDNS configuration
+  ansible.builtin.command: kubectl get configmap coredns -n kube-system -o json
+  register: core_dns
+  changed_when: false
+
+- name: Remove only the previously managed DNS zone from the working copy
+  ansible.builtin.set_fact:
+    base_corefile: "{{ (core_dns.stdout | from_json).data.Corefile | regex_replace('(?ms)^# BEGIN GEN3 LOCAL DNS\\n.*?^# END GEN3 LOCAL DNS\\n?', '') }}"
+
+- name: Reject an unmanaged conflicting local DNS zone
+  ansible.builtin.assert:
+    that: "'gen3.kind.test' not in base_corefile"
+    fail_msg: An unmanaged gen3.kind.test zone already exists in CoreDNS. Review it before continuing.
+
+# A separate server block avoids adding a second hosts plugin to the main block.
+- name: Build local DNS zone while preserving all existing cluster DNS settings
+  ansible.builtin.set_fact:
+    local_corefile: |
+      {{ base_corefile | trim }}
+
+      # BEGIN GEN3 LOCAL DNS
+      gen3.kind.test:53 {
+          errors
+          cache 5
+          hosts {
+              {{ ingress_ip }} gen3.kind.test
+              {{ minio_ip }} minio.gen3.kind.test
+              {{ ldap_ip }} ldap.gen3.kind.test
+              ttl 5
+          }
+      }
+      # END GEN3 LOCAL DNS
+
+- name: Patch only the Corefile data key
+  ansible.builtin.command:
+    argv: [kubectl, patch, configmap, coredns, -n, kube-system, --type, merge, -p, "{{ {'data': {'Corefile': local_corefile}} | to_json }}"]
+  when: local_corefile != (core_dns.stdout | from_json).data.Corefile
+  register: dns_patch
+  changed_when: true
+
+- name: Restart CoreDNS after a configuration change
+  ansible.builtin.command: kubectl rollout restart deployment/coredns -n kube-system
+  when: dns_patch is changed
+  changed_when: true
+
+- name: Wait for CoreDNS
+  ansible.builtin.command: kubectl rollout status deployment/coredns -n kube-system --timeout=180s
+  changed_when: false

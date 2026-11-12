@@ -1,0 +1,115 @@
+---
+# Add a second local training login; mongoose and its password are preserved.
+# Run: ansible-playbook gen3-deployment/04-add-training-user.yaml
+# Password is intentionally a documented local-training example, not a secret.
+- name: Add and verify the training user in LDAP and Gen3
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    state_dir: "{{ lookup('env', 'HOME') }}/.gen3-local"
+    training_password: training123
+    initialization_run_id: training-user
+  environment:
+    PATH: "{{ lookup('env', 'HOME') }}/.local/bin:{{ lookup('env', 'PATH') }}"
+  pre_tasks:
+    - name: Reject check mode for a real account change
+      ansible.builtin.assert:
+        that: not ansible_check_mode
+
+    - name: Read current Kubernetes endpoint
+      ansible.builtin.command: kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
+      register: training_api
+      changed_when: false
+
+    - name: Discover the local Talos endpoint
+      ansible.builtin.command: docker port gen3-local-controlplane-1 6443/tcp
+      register: training_port
+      changed_when: false
+
+    - name: Reject another cluster before adding the user
+      ansible.builtin.assert:
+        that: training_api.stdout in ['https://127.0.0.1:' + training_port.stdout_lines[0].split(':')[-1], 'https://localhost:' + training_port.stdout_lines[0].split(':')[-1]]
+
+    - name: Read the currently deployed authorization policy
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: ConfigMap
+        namespace: gen3
+        name: useryaml
+      register: training_active_policy
+
+    - name: Require a deployed Gen3 policy
+      ansible.builtin.assert:
+        that: training_active_policy.resources | length == 1
+        fail_msg: Complete 02-deploy-gen3.yaml before adding another application user.
+
+  tasks:
+    # Existing training passwords are reset only if different from the requested
+    # password; no other LDAP entry or group member is replaced.
+    - name: Create training account and add it to gen3-users
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/add-training-ldap-user.py', '{{ state_dir }}/ldap.env']
+        stdin: '{{ {"password": training_password} | to_json }}'
+      register: training_ldap
+      changed_when: (training_ldap.stdout | from_json).changed
+      no_log: true
+
+    - name: Extend the active authorization policy while preserving existing users
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/prepare-training-user-policy.py']
+        stdin: >-
+          {{ {'source_values': lookup('file', playbook_dir + '/config/gen3-values.yaml') | from_yaml,
+              'active_policy': training_active_policy.resources[0].data.useryaml | from_yaml} | to_json }}
+      register: training_policy_json
+      changed_when: false
+
+    - name: Load the updated policy for synchronization
+      ansible.builtin.set_fact:
+        training_updated: '{{ training_policy_json.stdout | from_json }}'
+
+    # Persist in the non-secret Helm source so the next application upgrade keeps
+    # this user. No private application values or passwords are written to Git.
+    - name: Preserve the added user in future Gen3 deployments
+      ansible.builtin.copy:
+        dest: '{{ playbook_dir }}/config/gen3-values.yaml'
+        content: |
+          # Local HTTP training profile. Includes mongoose and training accounts.
+          {{ training_updated.source_values | to_nice_yaml(indent=2) }}
+        mode: '0644'
+
+    - name: Update only the installed authorization ConfigMap
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata: {name: useryaml, namespace: gen3}
+          data:
+            useryaml: '{{ training_updated.policy | to_nice_yaml }}'
+
+    - name: Supply the policy to the existing initialization workflow
+      ansible.builtin.set_fact:
+        app_runtime:
+          values:
+            fence:
+              USER_YAML: '{{ training_updated.policy | to_nice_yaml }}'
+
+    - name: Synchronize authorization and create the Fence user
+      ansible.builtin.include_tasks: tasks/initialize-policy.yaml
+
+    - name: Verify the complete Dex LDAP and Gen3 login flow
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/check-training-login.py']
+        stdin: '{{ {"password": training_password} | to_json }}'
+      changed_when: false
+      no_log: true
+
+    - name: Show the local training login
+      ansible.builtin.debug:
+        msg:
+          - 'Open http://gen3.kind.test and choose Training LDAP.'
+          - 'Username: training'
+          - 'Password: training123 (unless overridden with training_password).'
+          - 'Group membership, authorization sync and a full Gen3 login were verified.'
+          - 'The mongoose account remains unchanged.'

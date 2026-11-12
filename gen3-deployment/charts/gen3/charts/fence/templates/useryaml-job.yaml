@@ -1,0 +1,6 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: useryaml
+data: 
+  useryaml: {{ .Values.USER_YAML | toYaml | nindent 4}}

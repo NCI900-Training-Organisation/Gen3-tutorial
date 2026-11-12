@@ -1,0 +1,106 @@
+---
+# Run manually after submitting/changing metadata; no scheduled ETL is enabled.
+# ansible-playbook gen3-deployment/03-refresh-search.yaml
+- name: Refresh Gen3 exploration indices using the installed ETL mapping
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    # Use once when the only existing indices are bootstrap aliases.
+    etl_force: false
+    # Override to reuse a named completed run; new runs keep prior Jobs for diagnosis.
+    etl_run_id: '{{ now(utc=true, fmt="%Y%m%d%H%M%S") }}'
+  tasks:
+    - name: Freeze a unique name for this ETL run
+      ansible.builtin.set_fact:
+        etl_job_name: "training-etl-{{ etl_run_id }}"
+
+    - name: Read current cluster endpoint
+      ansible.builtin.command: kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
+      register: etl_api
+      changed_when: false
+
+    - name: Discover the local Talos endpoint
+      ansible.builtin.command: docker port gen3-local-controlplane-1 6443/tcp
+      register: etl_port
+      changed_when: false
+
+    - name: Reject another Kubernetes cluster
+      ansible.builtin.assert:
+        that: etl_api.stdout in ['https://127.0.0.1:' + etl_port.stdout_lines[0].split(':')[-1], 'https://localhost:' + etl_port.stdout_lines[0].split(':')[-1]]
+
+    - name: Read the suspended ETL template
+      kubernetes.core.k8s_info:
+        api_version: batch/v1
+        kind: CronJob
+        namespace: gen3
+        name: etl-cronjob
+      register: etl_cron
+
+    - name: Require the application ETL template
+      ansible.builtin.assert:
+        that: etl_cron.resources | length == 1
+        fail_msg: Deploy 02-deploy-gen3.yaml before refreshing search.
+
+    - name: Reject overlapping ETL runs
+      kubernetes.core.k8s_info:
+        api_version: batch/v1
+        kind: Job
+        namespace: gen3
+        label_selectors: ["gen3.training/task=etl"]
+      register: etl_previous
+
+    - name: Require no running training ETL Jobs
+      ansible.builtin.assert:
+        that: item.status.active | default(0) | int == 0
+        fail_msg: An ETL Job is still running. Wait for it before starting another refresh.
+      loop: "{{ etl_previous.resources }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    - name: Make a bounded Job from the installed ETL template
+      ansible.builtin.command:
+        argv:
+          [
+            "{{ ansible_playbook_python }}",
+            "{{ playbook_dir }}/tasks/make-initialization-job.py",
+          ]
+        stdin: '{{ {"kind": "etl", "name": etl_job_name, "cronjob": etl_cron.resources[0], "force": etl_force | bool} | to_json }}'
+      register: etl_job_json
+      changed_when: false
+
+    - name: Start ETL with its existing database credentials
+      kubernetes.core.k8s:
+        definition: "{{ etl_job_json.stdout | from_json }}"
+
+    - name: Wait for ETL completion or report a blocked container
+      ansible.builtin.command:
+        argv:
+          [
+            "{{ ansible_playbook_python }}",
+            "{{ playbook_dir }}/tasks/check-etl-status.py",
+            "{{ etl_job_name }}",
+          ]
+      register: etl_poll
+      changed_when: false
+      failed_when: false
+      until: etl_poll.rc in [0, 2]
+      retries: 185
+      delay: 10
+
+    - name: Require successful ETL
+      ansible.builtin.assert:
+        that: etl_poll.rc == 0
+        fail_msg: >-
+          ETL did not complete: {{ etl_poll.stdout }}.
+          Inspect kubectl logs -n gen3 job/{{ etl_job_name }} -c tube and the pod events.
+          The Job is retained; no automatic data deletion or retry was performed.
+
+    - name: Reload Guppy after the index aliases and mappings change
+      ansible.builtin.command: kubectl rollout restart deployment/guppy-deployment -n gen3
+      changed_when: true
+
+    - name: Wait for exploration readiness
+      ansible.builtin.command: kubectl rollout status deployment/guppy-deployment -n gen3 --timeout=300s
+      changed_when: false

@@ -1,0 +1,12 @@
+{{- if or (not .Values.global.externalSecrets.deploy) (and .Values.global.externalSecrets.deploy .Values.externalSecrets.createK8sFenceConfigSecret) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fence-config
+stringData:
+  fence-config.yaml: |
+    {{- with .Values.FENCE_CONFIG }}
+    {{- toYaml . | nindent 4 }}
+    {{ end }}
+---
+{{- end }}

@@ -1,0 +1,208 @@
+---
+# DESTRUCTIVE: removes the local Gen3 cluster and all its application/file data.
+# Run: ansible-playbook gen3-deployment/10-tear-down.yaml --ask-become-pass
+# Keeps source dictionaries, repository files, tools, images and unrelated clusters.
+- name: Tear down the local Gen3 training environment
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    cluster_name: gen3-local
+    state_dir: "{{ lookup('env', 'HOME') }}/.gen3-local"
+    talos_config_path: "{{ lookup('env', 'TALOSCONFIG') or (lookup('env', 'HOME') + '/.talos/config') }}"
+    remove_contexts: true
+    service_containers: [gen3-ingress-proxy, gen3-minio, gen3-ldap, gen3-jumpbox]
+    service_volumes:
+      - gen3-ingress-proxy-config
+      - gen3-minio-data
+      - gen3-minio-certs
+      - gen3-ldap-data
+      - gen3-ldap-config
+      - gen3-ldap-certs
+      - gen3-jumpbox-home
+  environment:
+    PATH: "{{ lookup('env', 'HOME') }}/.local/bin:{{ lookup('env', 'PATH') }}"
+    TALOSCONFIG: '{{ talos_config_path }}'
+  pre_tasks:
+    - name: Require macOS and the exact documented deletion scope
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.system == 'Darwin'
+          - not ansible_check_mode
+          - cluster_name == 'gen3-local'
+          - state_dir == lookup('env', 'HOME') + '/.gen3-local'
+          - service_containers == ['gen3-ingress-proxy', 'gen3-minio', 'gen3-ldap', 'gen3-jumpbox']
+          - service_volumes | difference(['gen3-ingress-proxy-config', 'gen3-minio-data', 'gen3-minio-certs', 'gen3-ldap-data', 'gen3-ldap-config', 'gen3-ldap-certs', 'gen3-jumpbox-home']) | length == 0
+        fail_msg: This destructive playbook supports only the named local training setup. Use --syntax-check for validation.
+
+    - name: Require a working Docker engine before deleting anything
+      ansible.builtin.command: docker info
+      changed_when: false
+
+    - name: Require a single kubeconfig file for safe context cleanup
+      ansible.builtin.assert:
+        that: (lookup('env', 'KUBECONFIG') or (lookup('env', 'HOME') + '/.kube/config')).split(':') | length == 1
+      when: remove_contexts | bool
+
+  tasks:
+    # Capture owned node volumes before deleting the containers. No broad prune.
+    - name: List existing containers
+      ansible.builtin.command:
+        argv: [docker, ps, -a, --format, '{% raw %}{{.Names}}{% endraw %}']
+      register: teardown_containers
+      changed_when: false
+
+    - name: Select only this Talos cluster's node names
+      ansible.builtin.set_fact:
+        teardown_nodes: "{{ teardown_containers.stdout_lines | select('match', '^gen3-local-(controlplane|worker)-[0-9]+$') | list }}"
+        teardown_node_volumes: []
+
+    - name: Inspect selected Talos nodes privately
+      ansible.builtin.command: docker inspect '{{ item }}'
+      loop: '{{ teardown_nodes }}'
+      register: teardown_node_info
+      changed_when: false
+      no_log: true
+
+    - name: Refuse deleting a non-Talos container with a matching name
+      ansible.builtin.assert:
+        that: (item.stdout | from_json)[0].Config.Image is search('(^|/)talos[:@]')
+        fail_msg: A matching node name has a non-Talos image. Inspect it manually before teardown.
+      loop: '{{ teardown_node_info.results }}'
+      no_log: true
+
+    - name: Record volumes attached to this cluster's nodes
+      ansible.builtin.set_fact:
+        teardown_node_volumes: >-
+          {{ (teardown_node_volumes + ((item.stdout | from_json)[0].Mounts |
+             selectattr('Type', 'equalto', 'volume') | map(attribute='Name') | list)) | unique | list }}
+      loop: '{{ teardown_node_info.results }}'
+      no_log: true
+
+    # Remove dependent services first, so they do not block network deletion.
+    - name: Remove local MinIO LDAP proxy and legacy jumpbox containers
+      ansible.builtin.command: docker rm -f '{{ item }}'
+      loop: '{{ service_containers }}'
+      when: item in teardown_containers.stdout_lines
+      changed_when: true
+
+    - name: Inspect Talos provisioner state
+      ansible.builtin.stat:
+        path: "{{ lookup('env', 'HOME') }}/.talos/clusters/{{ cluster_name }}"
+      register: teardown_state
+
+    - name: Ask Talos to destroy the cluster when provisioner state exists
+      ansible.builtin.command: talosctl cluster destroy --name '{{ cluster_name }}'
+      when: teardown_state.stat.isdir | default(false)
+      register: teardown_destroy
+      # Handle partial/lost state below using only the previously inspected nodes.
+      failed_when: false
+      changed_when: teardown_destroy.rc == 0
+
+    - name: List any containers surviving provisioner cleanup
+      ansible.builtin.command:
+        argv: [docker, ps, -a, --format, '{% raw %}{{.Names}}{% endraw %}']
+      register: teardown_remaining
+      changed_when: false
+
+    - name: Remove inspected leftover Talos nodes and anonymous volumes
+      ansible.builtin.command: docker rm -fv '{{ item }}'
+      loop: '{{ teardown_nodes }}'
+      when: item in teardown_remaining.stdout_lines
+      changed_when: true
+
+    - name: List remaining Docker networks
+      ansible.builtin.command:
+        argv: [docker, network, ls, --format, '{% raw %}{{.Name}}{% endraw %}']
+      register: teardown_networks
+      changed_when: false
+
+    - name: Remove only the Gen3 network
+      ansible.builtin.command: docker network rm '{{ cluster_name }}'
+      when: cluster_name in teardown_networks.stdout_lines
+      changed_when: true
+      # An unrelated attached container causes a failure; it is never removed.
+
+    - name: List remaining Docker volumes
+      ansible.builtin.command: docker volume ls -q
+      register: teardown_volumes
+      changed_when: false
+
+    - name: Remove Gen3 service data and captured Talos node volumes
+      ansible.builtin.command: docker volume rm '{{ item }}'
+      loop: '{{ (service_volumes + teardown_node_volumes) | unique | list }}'
+      when: item in teardown_volumes.stdout_lines
+      changed_when: true
+      # Docker refuses a volume used by another container; never force that case.
+
+    # No Kubernetes API is needed: all application resources disappear with nodes.
+    - name: Remove only Gen3 Kubernetes and Talos contexts
+      ansible.builtin.command:
+        argv: ['{{ ansible_playbook_python }}', '{{ playbook_dir }}/tasks/remove-local-contexts.py', '{{ cluster_name }}', '{{ talos_config_path }}']
+      register: teardown_contexts
+      changed_when: "'updated' in teardown_contexts.stdout"
+      when: remove_contexts | bool
+
+    - name: Inspect MinIO client configuration
+      ansible.builtin.stat:
+        path: "{{ lookup('env', 'HOME') }}/.mc/config.json"
+      register: teardown_mc_config
+
+    - name: Remove only the Gen3 MinIO alias without requiring mc
+      ansible.builtin.command:
+        argv:
+          - '{{ ansible_playbook_python }}'
+          - '-c'
+          - |
+            import json, os, tempfile
+            from pathlib import Path
+            p = Path.home() / '.mc/config.json'
+            data = json.loads(p.read_text())
+            aliases = data.get('aliases', {})
+            if 'gen3-local' not in aliases:
+                print('unchanged')
+            else:
+                del aliases['gen3-local']
+                fd, name = tempfile.mkstemp(dir=p.parent)
+                try:
+                    with os.fdopen(fd, 'w') as f:
+                        json.dump(data, f, indent=2)
+                        f.write('\n')
+                    os.replace(name, p)
+                finally:
+                    if os.path.exists(name):
+                        os.unlink(name)
+                print('updated')
+      when: teardown_mc_config.stat.exists
+      register: teardown_mc
+      changed_when: teardown_mc.stdout == 'updated'
+      no_log: true
+
+    - name: Remove only the managed Gen3 host entries
+      ansible.builtin.blockinfile:
+        path: /etc/hosts
+        marker: '# {mark} GEN3 LOCAL NETWORK'
+        state: absent
+      become: true
+      register: teardown_hosts
+
+    - name: Flush macOS DNS cache after host changes
+      ansible.builtin.command: dscacheutil -flushcache
+      when: teardown_hosts.changed
+      changed_when: false
+
+    - name: Remove saved local passwords signing keys and Talos state
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: absent
+      loop:
+        - '{{ state_dir }}'
+        - "{{ lookup('env', 'HOME') }}/.talos/clusters/{{ cluster_name }}"
+
+    - name: Report teardown completion
+      ansible.builtin.debug:
+        msg:
+          - 'Removed Gen3 cluster/workloads, PostgreSQL/Elasticsearch data, MinIO files, LDAP users, proxy and private local credentials.'
+          - 'Repository inputs, installed tools, Python environment, Docker images and unrelated clusters were retained.'
+          - 'Context cleanup enabled: {{ remove_contexts }}. No system certificate trust settings were changed.'

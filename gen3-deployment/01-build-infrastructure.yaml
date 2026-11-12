@@ -1,0 +1,702 @@
+---
+# Local training infrastructure: one Talos node, local-path, MinIO, LDAP,
+# HTTP ingress and Dex. No application certificates or host CA trust changes.
+# Kubernetes/Talos still manage their own mandatory internal API certificates.
+# Run: ansible-playbook gen3-deployment/01-build-infrastructure.yaml --ask-become-pass
+# sudo is needed only for /etc/hosts. Docker Desktop and tools must be installed.
+# PostgreSQL and Gen3 are deployed separately. Fence must use HTTP endpoints
+# and cookie settings compatible with HTTP; do not expose this training setup.
+# Existing TLS-configured service containers are refused, never deleted.
+- name: Build the local macOS training infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    install_tools: false
+    kube_context: ''
+    talos_context: ''
+    minio_new_password: ''
+    mongoose_password: mangoose
+    talos_config_path: '{{ lookup(''env'', ''TALOSCONFIG'') or (lookup(''env'', ''HOME'') + ''/.talos/config'')
+      }}'
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    state_dir: '{{ lookup(''env'', ''HOME'') }}/.gen3-local'
+    cluster_name: gen3-local
+    controlplane_cpus: 6
+    controlplane_memory: 8GiB
+    controlplane_cpu_shares: 4096
+    minio_image: gen3-minio:RELEASE.2025-10-15T17-29-55Z
+    ldap_image: osixia/openldap:1.5.0
+    admin_dn: cn=admin,dc=gen3,dc=kind,dc=test
+    user_dn: uid=mongoose,ou=people,dc=gen3,dc=kind,dc=test
+    local_path: '{{ lookup(''env'', ''HOME'') }}/.local/bin:{{ lookup(''env'', ''PATH'') }}'
+  environment:
+    PATH: '{{ local_path }}'
+    TALOSCONFIG: '{{ talos_config_path }}'
+  pre_tasks:
+  - name: Require macOS and a normal execution (check mode cannot bootstrap infrastructure)
+    ansible.builtin.assert:
+      that:
+      - ansible_facts.system == 'Darwin'
+      - not ansible_check_mode
+      - controlplane_memory is match('^[0-9]+GiB$')
+      fail_msg: Run on macOS without --check. Syntax validation uses --syntax-check.
+  - name: Install Homebrew tools
+    ansible.builtin.command: brew install siderolabs/tap/talosctl go python kubectl helm
+    when: install_tools | bool
+    changed_when: true
+  - name: Install Python dependencies into the running Ansible environment
+    ansible.builtin.pip:
+      name:
+      - kubernetes==36.0.2
+      - boto3>=1.34
+      - python-dateutil<3
+      - PyYAML
+    when: install_tools | bool
+  - name: Install collections for the later Gen3 deployment
+    ansible.builtin.command: ansible-galaxy collection install kubernetes.core amazon.aws
+    when: install_tools | bool
+    changed_when: true
+  - name: Create local binary directory
+    ansible.builtin.file:
+      path: '{{ lookup(''env'', ''HOME'') }}/.local/bin'
+      state: directory
+      mode: '0755'
+  - name: Install MinIO client from source if missing
+    ansible.builtin.command: go install github.com/minio/mc@latest
+    environment:
+      GOBIN: '{{ lookup(''env'', ''HOME'') }}/.local/bin'
+    args:
+      creates: '{{ lookup(''env'', ''HOME'') }}/.local/bin/mc'
+    when: install_tools | bool
+  - name: Check required commands
+    ansible.builtin.command: /bin/bash -c 'command -v "$1"' -- '{{ item }}'
+    loop:
+    - docker
+    - talosctl
+    - kubectl
+    - helm
+    - openssl
+    - mc
+    changed_when: false
+  - name: Open Docker Desktop
+    ansible.builtin.command: open -a Docker
+    changed_when: false
+  - name: Wait for Docker Desktop engine
+    ansible.builtin.command: docker info
+    register: docker_info
+    until: docker_info.rc == 0
+    retries: 60
+    delay: 5
+    changed_when: false
+  - name: Display Docker resources and kernel
+    ansible.builtin.debug:
+      var: docker_info.stdout_lines
+  tasks:
+  - name: Create protected state directory
+    ansible.builtin.file:
+      path: '{{ state_dir }}'
+      state: directory
+      mode: '0700'
+  - name: Inspect local control plane
+    ansible.builtin.command: docker container inspect '{{ cluster_name }}-controlplane-1'
+    register: control_plane
+    failed_when: control_plane.rc not in [0, 1]
+    changed_when: false
+  - name: Detect worker containers from the previous topology
+    ansible.builtin.command:
+      argv:
+      - docker
+      - ps
+      - -a
+      - --filter
+      - name={{ cluster_name }}-worker-
+      - --format
+      - '{% raw %}{{.Names}}{% endraw %}'
+    register: old_worker_containers
+    changed_when: false
+  - name: Refuse automatic conversion of an existing multi-node cluster
+    ansible.builtin.assert:
+      that: old_worker_containers.stdout | trim | length == 0
+      fail_msg: Single-node profile requires a fresh cluster. Back up required data and deliberately run teardown
+        first; this build never deletes existing worker nodes or their volumes.
+  - name: Create missing Talos cluster (never delete an existing one)
+    ansible.builtin.command: talosctl cluster create docker --name {{ cluster_name }} --image ghcr.io/siderolabs/talos:v1.14.5
+      --kubernetes-version 1.37.1 --workers 0 --cpus-controlplanes {{ controlplane_cpus }} --memory-controlplanes
+      {{ controlplane_memory }} --config-patch-controlplanes @{{ playbook_dir }}/manifests/talos-single-node.patch.yaml
+    when: control_plane.rc != 0
+    changed_when: true
+  - name: Inspect control-plane CPU allocation
+    ansible.builtin.command: docker container inspect '{{ cluster_name }}-controlplane-1'
+    register: controlplane_resources
+    changed_when: false
+  - name: Require memory allocation matching the single-node profile
+    ansible.builtin.assert:
+      that: (controlplane_resources.stdout | from_json)[0].HostConfig.Memory | int >= ((controlplane_memory | regex_replace('GiB$',
+        '') | int) * 1073741824)
+      fail_msg: Existing node has less memory than the single-node profile. Rebuild deliberately with the configured
+        memory; this playbook does not silently resize a running node with persistent data.
+  - name: Give control plane adequate CPU limit and scheduling priority
+    ansible.builtin.command:
+      argv:
+      - docker
+      - update
+      - --cpus
+      - '{{ controlplane_cpus | string }}'
+      - --cpu-shares
+      - '{{ controlplane_cpu_shares | string }}'
+      - '{{ cluster_name }}-controlplane-1'
+    when: "((controlplane_resources.stdout | from_json)[0].HostConfig.NanoCpus | int !=\n  (controlplane_cpus |\
+      \ float * 1000000000) | int) or\n((controlplane_resources.stdout | from_json)[0].HostConfig.CpuShares | int\
+      \ !=\n  controlplane_cpu_shares | int)"
+    changed_when: true
+  - name: Discover local Kubernetes API port
+    ansible.builtin.command: docker port '{{ cluster_name }}-controlplane-1' 6443/tcp
+    register: api_port
+    changed_when: false
+  - name: Read available Kubernetes contexts
+    ansible.builtin.command: kubectl config view -o json
+    register: kube_config
+    changed_when: false
+  - name: Initialize local context candidates
+    ansible.builtin.set_fact:
+      kube_candidates: []
+      talos_candidates: []
+  - name: Find Kubernetes contexts matching the current Docker endpoint
+    ansible.builtin.set_fact:
+      kube_candidates: '{{ kube_candidates + [item.name] }}'
+    loop: '{{ (kube_config.stdout | from_json).contexts }}'
+    loop_control:
+      label: '{{ item.name }}'
+    vars:
+      context_server: '{{ ((kube_config.stdout | from_json).clusters | selectattr(''name'', ''equalto'', item.context.cluster)
+        | first).cluster.server }}'
+    when: context_server in ['https://127.0.0.1:' + (api_port.stdout_lines[0].split(':') | last), 'https://localhost:'
+      + (api_port.stdout_lines[0].split(':') | last)]
+  - name: Require an unambiguous local Kubernetes context
+    ansible.builtin.assert:
+      that:
+      - (kube_context | length > 0 and kube_context in kube_candidates) or (kube_context | length == 0 and kube_candidates
+        | length == 1)
+      fail_msg: 'Cannot select local context safely. Candidates: {{ kube_candidates }}. Supply -e kube_context=NAME
+        if ambiguous.'
+  - name: Select verified local Kubernetes context
+    ansible.builtin.command:
+      argv:
+      - kubectl
+      - config
+      - use-context
+      - '{{ kube_context if kube_context | length > 0 else kube_candidates[0] }}'
+    changed_when: false
+  - name: Read selected Kubernetes endpoint
+    ansible.builtin.command:
+      argv:
+      - kubectl
+      - config
+      - view
+      - --minify
+      - -o
+      - jsonpath={.clusters[0].cluster.server}
+    register: api_server
+    changed_when: false
+  - name: Require the current local Docker endpoint
+    ansible.builtin.assert:
+      that:
+      - api_server.stdout in ['https://127.0.0.1:' + (api_port.stdout_lines[0].split(':') | last), 'https://localhost:'
+        + (api_port.stdout_lines[0].split(':') | last)]
+      fail_msg: Selected Kubernetes context does not match the local Docker endpoint.
+  - name: Wait for Kubernetes nodes
+    ansible.builtin.command: kubectl wait --for=condition=Ready nodes --all --timeout=600s
+    changed_when: false
+  - name: Read the single Kubernetes node
+    kubernetes.core.k8s_info:
+      api_version: v1
+      kind: Node
+    register: single_cluster_nodes
+  - name: Require one schedulable control-plane node
+    ansible.builtin.assert:
+      that:
+      - single_cluster_nodes.resources | length == 1
+      - single_cluster_nodes.resources[0].metadata.name == cluster_name + '-controlplane-1'
+      - single_cluster_nodes.resources[0].spec.taints | default([]) | selectattr('effect', 'equalto', 'NoSchedule')
+        | list | length == 0
+      fail_msg: Expected one control-plane node without NoSchedule taints. Recreate with the supplied Talos single-node
+        configuration; do not silently adopt another topology.
+  - name: Discover storage node address
+    ansible.builtin.command:
+      argv:
+      - kubectl
+      - get
+      - node
+      - '{{ item }}'
+      - -o
+      - jsonpath={.status.addresses[?(@.type=="InternalIP")].address}
+    loop:
+    - '{{ cluster_name }}-controlplane-1'
+    register: storage_node_addresses
+    changed_when: false
+  - name: Require the storage node address
+    ansible.builtin.assert:
+      that: item.stdout | length > 0
+    loop: '{{ storage_node_addresses.results }}'
+    loop_control:
+      label: '{{ item.item }}'
+  - name: Label the shared node for Elasticsearch placement
+    ansible.builtin.command: kubectl label node '{{ cluster_name }}-controlplane-1' elasticnode=iselasticnode --overwrite
+    register: scheduling
+    changed_when: '''not modified'' not in scheduling.stdout and ''no changes'' not in scheduling.stdout'
+  - name: Discover current Docker Talos API port
+    ansible.builtin.command: docker port '{{ cluster_name }}-controlplane-1' 50000/tcp
+    register: talos_port
+    changed_when: false
+  - name: Read Talos contexts from the configured credential file
+    ansible.builtin.slurp:
+      src: '{{ talos_config_path }}'
+    register: talos_config
+    no_log: true
+  - name: Find Talos contexts matching the current Docker endpoint
+    ansible.builtin.set_fact:
+      talos_candidates: '{{ talos_candidates + [item.key] }}'
+    loop: '{{ ((talos_config.content | b64decode | from_yaml).contexts | dict2items) }}'
+    loop_control:
+      label: '{{ item.key }}'
+    when: "(item.value.endpoints | intersect([\n  '127.0.0.1:' + (talos_port.stdout_lines[0].split(':') | last),\n\
+      \  'localhost:' + (talos_port.stdout_lines[0].split(':') | last)])) | length > 0"
+    no_log: true
+  - name: Require an unambiguous local Talos context
+    ansible.builtin.assert:
+      that:
+      - (talos_context | length > 0 and talos_context in talos_candidates) or (talos_context | length == 0 and talos_candidates
+        | length == 1)
+      fail_msg: 'Cannot select local Talos context safely. Candidates: {{ talos_candidates }}. Supply -e talos_context=NAME
+        if ambiguous.'
+  - name: Select verified local Talos context
+    ansible.builtin.command:
+      argv:
+      - talosctl
+      - config
+      - context
+      - '{{ talos_context if talos_context | length > 0 else talos_candidates[0] }}'
+    changed_when: false
+  - name: Add writable directory volume to the shared control-plane node
+    ansible.builtin.command:
+      argv:
+      - talosctl
+      - --nodes
+      - '{{ storage_node_addresses.results | map(attribute=''stdout'') | join('','') }}'
+      - patch
+      - machineconfig
+      - --patch
+      - '@{{ playbook_dir }}/manifests/talos-local-storage.patch.yaml'
+    changed_when: true
+  - name: Wait for local-path directory mount on the shared node
+    ansible.builtin.command:
+      argv:
+      - talosctl
+      - --nodes
+      - '{{ item.stdout }}'
+      - get
+      - mountstatus
+      - -o
+      - json
+    loop: '{{ storage_node_addresses.results }}'
+    loop_control:
+      label: '{{ item.stdout }}'
+    register: worker_mount
+    until: worker_mount.rc == 0 and '/var/mnt/local-path-provisioner' in worker_mount.stdout
+    retries: 30
+    delay: 2
+    changed_when: false
+  - name: Apply local storage manifests
+    ansible.builtin.command: kubectl apply -f '{{ playbook_dir }}/manifests/{{ item }}'
+    loop:
+    - local-path-provisioner.yaml
+    - storageclasses.yaml
+    register: storage_apply
+    changed_when: '''created'' in storage_apply.stdout or ''configured'' in storage_apply.stdout'
+  - name: Wait for provisioner
+    ansible.builtin.command: kubectl rollout status -n local-path-storage deployment/local-path-provisioner --timeout=180s
+    changed_when: false
+  - name: Create privileged namespace for hostPath smoke test
+    ansible.builtin.shell: 'set -o pipefail
+
+      kubectl create namespace local-storage-test --dry-run=client -o yaml | kubectl apply -f -
+
+      kubectl label namespace local-storage-test pod-security.kubernetes.io/enforce=privileged --overwrite
+
+      '
+    args:
+      executable: /bin/bash
+    changed_when: true
+  - name: Apply smoke test
+    ansible.builtin.command: kubectl apply -n local-storage-test -f '{{ playbook_dir }}/manifests/storage-smoke-test.yaml'
+    changed_when: true
+  - name: Wait for writable storage
+    ansible.builtin.command: kubectl wait -n local-storage-test --for=condition=Ready pod/local-storage-check --timeout=300s
+    changed_when: false
+  - name: Verify smoke test contents
+    ansible.builtin.command: kubectl logs -n local-storage-test local-storage-check
+    register: smoke_log
+    failed_when: smoke_log.rc != 0 or 'local-storage-ok' not in smoke_log.stdout_lines
+    changed_when: false
+  - name: Remove only smoke test resources after successful verification
+    ansible.builtin.command: kubectl delete -n local-storage-test -f '{{ playbook_dir }}/manifests/storage-smoke-test.yaml'
+    changed_when: true
+  - name: Check MinIO credential file
+    ansible.builtin.stat:
+      path: '{{ state_dir }}/minio.env'
+    register: minio_env
+  - name: Generate password for new MinIO installation
+    ansible.builtin.command: openssl rand -hex 24
+    register: generated_password
+    when: not minio_env.stat.exists or minio_env.stat.size == 0
+    changed_when: false
+    no_log: true
+  - name: Write credentials only for new MinIO installation
+    ansible.builtin.copy:
+      dest: '{{ state_dir }}/minio.env'
+      mode: '0600'
+      content: 'MINIO_ROOT_USER=gen3-local-admin
+
+        MINIO_ROOT_PASSWORD={{ minio_new_password if minio_new_password | length > 0 else generated_password.stdout
+        }}
+
+        '
+    when: not minio_env.stat.exists or minio_env.stat.size == 0
+    no_log: true
+  - name: Inspect MinIO image
+    ansible.builtin.command: docker image inspect '{{ minio_image }}'
+    register: minio_image_check
+    failed_when: minio_image_check.rc not in [0, 1]
+    changed_when: false
+  - name: Build pinned MinIO source image if missing
+    ansible.builtin.command:
+      argv:
+      - docker
+      - build
+      - -t
+      - '{{ minio_image }}'
+      - '-'
+      stdin: 'FROM golang:1.25 AS build
+
+        ENV CGO_ENABLED=0
+
+        RUN GOBIN=/out go install github.com/minio/minio@RELEASE.2025-10-15T17-29-55Z
+
+        FROM alpine:3.22
+
+        RUN apk add --no-cache ca-certificates
+
+        COPY --from=build /out/minio /usr/local/bin/minio
+
+        EXPOSE 9000 9001
+
+        ENTRYPOINT ["/usr/local/bin/minio"]
+
+        '
+    when: minio_image_check.rc != 0
+    changed_when: true
+  - name: Write LDAP credentials with plain LDAP for local training
+    ansible.builtin.copy:
+      dest: '{{ state_dir }}/ldap.env'
+      mode: '0600'
+      force: false
+      content: 'LDAP_ORGANISATION=Gen3 Local
+
+        LDAP_DOMAIN=gen3.kind.test
+
+        LDAP_BASE_DN=dc=gen3,dc=kind,dc=test
+
+        LDAP_ADMIN_PASSWORD=gen3-ldap
+
+        LDAP_CONFIG_PASSWORD=gen3-ldap
+
+        LDAP_TLS=false
+
+        LDAP_TLS_ENFORCE=false
+
+        '
+    no_log: true
+  - name: Create or start service containers without replacing existing ones
+    ansible.builtin.include_tasks: tasks/local-container.yaml
+    loop:
+    - name: gen3-minio
+      image: '{{ minio_image }}'
+      volumes:
+      - gen3-minio-data
+      args:
+      - --env-file
+      - '{{ state_dir }}/minio.env'
+      - -p
+      - 127.0.0.1:9000:9000
+      - -p
+      - 127.0.0.1:9001:9001
+      - --mount
+      - type=volume,source=gen3-minio-data,target=/data
+      command:
+      - server
+      - /data
+      - --console-address
+      - :9001
+    - name: gen3-ldap
+      image: '{{ ldap_image }}'
+      volumes:
+      - gen3-ldap-data
+      - gen3-ldap-config
+      args:
+      - --platform
+      - linux/amd64
+      - --hostname
+      - gen3-ldap
+      - --network-alias
+      - ldap.gen3.kind.test
+      - --env-file
+      - '{{ state_dir }}/ldap.env'
+      - -p
+      - 127.0.0.1:389:389
+      - --mount
+      - type=volume,source=gen3-ldap-data,target=/var/lib/ldap
+      - --mount
+      - type=volume,source=gen3-ldap-config,target=/etc/ldap/slapd.d
+      command:
+      - --copy-service
+    loop_control:
+      loop_var: container_spec
+  - name: Configure and verify MinIO
+    ansible.builtin.include_tasks: tasks/local-minio.yaml
+  - name: Seed and verify LDAP
+    ansible.builtin.include_tasks: tasks/local-ldap.yaml
+  - name: Report completion and remaining deployment work
+    ansible.builtin.debug:
+      msg:
+      - 'Foundation verified: Talos, storage, MinIO buckets, mongoose / gen3-users.'
+      - Existing containers and credentials were preserved, not reconciled or replaced.
+      - Next plays configure HTTP networking and Dex; Gen3 deployment remains separate.
+- name: Configure local DNS and HTTP ingress
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    cluster_name: gen3-local
+    state_dir: '{{ lookup(''env'', ''HOME'') }}/.gen3-local'
+    proxy_image: haproxy:3.0.27-alpine
+    probe_image: python:3.13-alpine
+    minio_endpoint: http://minio.gen3.kind.test:9000
+  environment:
+    PATH: '{{ lookup(''env'', ''HOME'') }}/.local/bin:{{ lookup(''env'', ''PATH'') }}'
+  tasks:
+  - name: Require macOS and an actual run
+    ansible.builtin.assert:
+      that:
+      - ansible_facts.system == 'Darwin'
+      - not ansible_check_mode
+      - cluster_name == 'gen3-local'
+  - name: Verify selected Kubernetes context belongs to this local cluster
+    ansible.builtin.command:
+      argv:
+      - kubectl
+      - config
+      - view
+      - --minify
+      - -o
+      - jsonpath={.clusters[0].cluster.server}
+    register: kube_server
+    changed_when: false
+  - name: Discover Docker API publication
+    ansible.builtin.command: docker port '{{ cluster_name }}-controlplane-1' 6443/tcp
+    register: kube_port
+    changed_when: false
+  - name: Reject another cluster before making changes
+    ansible.builtin.assert:
+      that: kube_server.stdout in ['https://127.0.0.1:' + (kube_port.stdout_lines[0].split(':') | last), 'https://localhost:'
+        + (kube_port.stdout_lines[0].split(':') | last)]
+      fail_msg: Run the infrastructure build to select its current local context first.
+  - name: Inspect MinIO and LDAP Docker network addresses
+    ansible.builtin.command: docker inspect '{{ item }}'
+    loop:
+    - gen3-minio
+    - gen3-ldap
+    register: service_addresses
+    changed_when: false
+  - name: Discover control-plane nodes for ingress
+    ansible.builtin.command: kubectl get nodes -l node-role.kubernetes.io/control-plane -o json
+    register: ingress_nodes
+    changed_when: false
+  - name: Require at least one control-plane node
+    ansible.builtin.assert:
+      that: (ingress_nodes.stdout | from_json)['items'] | length > 0
+  - name: Record current addresses (never hardcode a Docker subnet)
+    ansible.builtin.set_fact:
+      minio_ip: '{{ (service_addresses.results[0].stdout | from_json)[0].NetworkSettings.Networks[cluster_name].IPAddress
+        }}'
+      ldap_ip: '{{ (service_addresses.results[1].stdout | from_json)[0].NetworkSettings.Networks[cluster_name].IPAddress
+        }}'
+      ingress_ip: '{{ ((ingress_nodes.stdout | from_json)[''items''][0].status.addresses | selectattr(''type'',
+        ''equalto'', ''InternalIP'') | first).address }}'
+  - name: Require running services with network addresses
+    ansible.builtin.assert:
+      that:
+      - minio_ip | length > 0
+      - ldap_ip | length > 0
+      - (service_addresses.results[0].stdout | from_json)[0].State.Running
+      - (service_addresses.results[1].stdout | from_json)[0].State.Running
+  - name: Add only managed local host entries
+    ansible.builtin.blockinfile:
+      path: /etc/hosts
+      marker: '# {mark} GEN3 LOCAL NETWORK'
+      block: '127.0.0.1 gen3.kind.test minio.gen3.kind.test ldap.gen3.kind.test
+
+        '
+    become: true
+  - name: Flush macOS hostname cache
+    ansible.builtin.command: dscacheutil -flushcache
+    changed_when: false
+  - name: Create namespaces for ingress and Dex
+    kubernetes.core.k8s:
+      api_version: v1
+      kind: Namespace
+      name: '{{ item }}'
+      state: present
+    loop:
+    - traefik
+    - dex
+    - gen3
+  - name: Permit host ports only in the ingress namespace
+    ansible.builtin.command: kubectl label namespace traefik pod-security.kubernetes.io/enforce=privileged --overwrite
+    changed_when: true
+  - name: Render control-plane Traefik values
+    ansible.builtin.template:
+      src: templates/traefik-local-values.yaml.j2
+      dest: '{{ state_dir }}/traefik-values.yaml'
+      mode: '0600'
+  - name: Register Traefik chart repository
+    ansible.builtin.command: helm repo add traefik https://traefik.github.io/charts --force-update
+    changed_when: true
+  - name: Install Traefik on control-plane nodes with host ports
+    ansible.builtin.command: helm upgrade --install traefik traefik/traefik --version 39.0.0 --namespace traefik
+      -f {{ state_dir }}/traefik-values.yaml --wait --timeout 5m
+    changed_when: true
+  - name: Configure cluster DNS without replacing the existing Corefile
+    ansible.builtin.include_tasks: tasks/local-dns.yaml
+  - name: Publish control-plane ingress on laptop loopback ports
+    ansible.builtin.include_tasks: tasks/local-ingress-proxy.yaml
+  - name: Configure mc to use the shared MinIO hostname
+    ansible.builtin.include_tasks: tasks/local-minio.yaml
+  - name: Check MinIO from the laptop over HTTP
+    ansible.builtin.uri:
+      url: http://minio.gen3.kind.test:9000/minio/health/live
+      status_code: 200
+    register: minio_http
+    until: minio_http.status | default(0) == 200
+    retries: 12
+    delay: 5
+- name: Configure Dex with the local LDAP directory
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    state_dir: '{{ lookup(''env'', ''HOME'') }}/.gen3-local'
+  tasks:
+  - name: Generate a stable Fence OIDC client secret only when absent
+    ansible.builtin.shell: 'umask 077
+
+      openssl rand -hex 32 > "{{ state_dir }}/gen3-oidc-client-secret"
+
+      '
+    args:
+      creates: '{{ state_dir }}/gen3-oidc-client-secret'
+    no_log: true
+  - name: Read LDAP search-bind credentials
+    ansible.builtin.slurp:
+      src: '{{ state_dir }}/ldap.env'
+    register: dex_ldap_env
+    no_log: true
+  - name: Render private Dex configuration
+    ansible.builtin.set_fact:
+      dex_config:
+        issuer: http://gen3.kind.test/dex
+        storage:
+          type: sqlite3
+          config:
+            file: /data/dex.db
+        web:
+          http: 0.0.0.0:5556
+        oauth2:
+          skipApprovalScreen: true
+        staticClients:
+        - id: gen3
+          name: Gen3 training
+          secret: '{{ lookup(''file'', state_dir + ''/gen3-oidc-client-secret'') | trim }}'
+          redirectURIs:
+          - http://gen3.kind.test/user/login/dex/login/
+        connectors:
+        - type: ldap
+          id: ldap
+          name: Training LDAP
+          config:
+            host: ldap.gen3.kind.test:389
+            bindDN: cn=admin,dc=gen3,dc=kind,dc=test
+            bindPW: '{{ (dex_ldap_env.content | b64decode).splitlines() | select(''match'', ''^LDAP_ADMIN_PASSWORD='')
+              | first | regex_replace(''^LDAP_ADMIN_PASSWORD='', '''') }}'
+            userSearch:
+              baseDN: ou=people,dc=gen3,dc=kind,dc=test
+              filter: (objectClass=posixAccount)
+              username: uid
+              idAttr: uid
+              emailAttr: mail
+              nameAttr: gecos
+              preferredUsernameAttr: uid
+            groupSearch:
+              baseDN: ou=groups,dc=gen3,dc=kind,dc=test
+              filter: (&(objectClass=posixGroup)(cn=gen3-users))
+              nameAttr: cn
+              userMatchers:
+              - userAttr: uid
+                groupAttr: memberUid
+            insecureNoSSL: true
+    no_log: true
+  - name: Store Dex configuration in a Kubernetes Secret
+    kubernetes.core.k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: dex-config
+          namespace: dex
+        type: Opaque
+        stringData:
+          config.yaml: '{{ dex_config | to_nice_yaml }}'
+    register: dex_secret
+    no_log: true
+  - name: Install single-instance Dex and persistent local storage
+    kubernetes.core.k8s:
+      state: present
+      src: '{{ playbook_dir }}/manifests/dex.yaml'
+  - name: Restart Dex after configuration changes
+    ansible.builtin.command: kubectl rollout restart deployment/dex -n dex
+    when: dex_secret.changed
+    changed_when: true
+  - name: Wait for Dex readiness
+    ansible.builtin.command: kubectl rollout status deployment/dex -n dex --timeout=300s
+    changed_when: false
+  - name: Verify public OIDC discovery over local HTTP
+    ansible.builtin.uri:
+      url: http://gen3.kind.test/dex/.well-known/openid-configuration
+      return_content: true
+    register: dex_discovery
+    until: dex_discovery.status | default(0) == 200
+    retries: 12
+    delay: 5
+    failed_when: dex_discovery.status | default(0) != 200 or dex_discovery.json.issuer | default('') != 'http://gen3.kind.test/dex'
+  - name: Explain the infrastructure and application boundary
+    ansible.builtin.debug:
+      msg:
+      - 'Infrastructure ready: single Talos node, local-path, MinIO, LDAP, HTTP and Dex.'
+      - 'Training login: mongoose; password: mangoose. Local training only.'
+      - Fence must use issuer http://gen3.kind.test/dex, client ID gen3 and the private OIDC secret file in {{ state_dir
+        }}.
+      - Next deploy PostgreSQL and Gen3; serve the supplied bundled-schema.json to its dictionary consumers.
+      - Gen3 login, token generation and file transfer are not verified by this infrastructure playbook.

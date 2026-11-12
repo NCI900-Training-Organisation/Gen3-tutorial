@@ -1,0 +1,49 @@
+# One PostgreSQL instance; no operator, replicas, cloud storage or backup service.
+apiVersion: v1
+kind: Service
+metadata: {name: gen3-postgres, namespace: gen3}
+spec:
+  selector: {app: gen3-postgres}
+  ports: [{name: postgres, port: 5432}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: gen3-postgres, namespace: gen3}
+spec:
+  serviceName: gen3-postgres
+  replicas: 1
+  selector:
+    matchLabels: {app: gen3-postgres}
+  template:
+    metadata:
+      labels: {app: gen3-postgres}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          image: postgres:16.6-alpine
+          args: [-c, shared_buffers=128MB, -c, max_connections=200]
+          env:
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: gen3-postgres-auth, key: password}
+            - name: GEN3_SERVICE_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: gen3-postgres-auth, key: service-password}
+          ports: [{name: postgres, containerPort: 5432}]
+          readinessProbe:
+            exec: {command: [pg_isready, -U, postgres]}
+            initialDelaySeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 768Mi}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        storageClassName: csi-cinder-sc-delete
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: {storage: 5Gi}

@@ -1,0 +1,45 @@
+---
+- name: Render TCP forwarding configuration
+  ansible.builtin.template:
+    src: templates/ingress-proxy.cfg.j2
+    dest: '{{ state_dir }}/haproxy.cfg'
+    mode: '0644'
+  register: proxy_config
+
+- name: Inspect managed ingress proxy
+  ansible.builtin.command: docker container inspect gen3-ingress-proxy
+  register: proxy_container
+  failed_when: proxy_container.rc not in [0, 1]
+  changed_when: false
+
+- name: Require ownership of an existing proxy before changing it
+  ansible.builtin.assert:
+    that: (proxy_container.stdout | from_json)[0].Config.Labels.get('gen3.local/managed', '') == 'networking'
+    fail_msg: An unmanaged gen3-ingress-proxy exists; inspect it manually.
+  when: proxy_container.rc == 0
+
+- name: Create persistent proxy configuration volume
+  ansible.builtin.command: docker volume create gen3-ingress-proxy-config
+  when: proxy_container.rc != 0
+  changed_when: true
+
+# No host bind mounts: Docker Desktop may not see newly created host directories.
+- name: Create missing ingress proxy without starting it
+  ansible.builtin.command:
+    argv: [docker, create, --name, gen3-ingress-proxy, --label, 'gen3.local/managed=networking', --network, '{{ cluster_name }}', --restart, unless-stopped, -p, '127.0.0.1:80:8080', --mount, 'type=volume,source=gen3-ingress-proxy-config,target=/usr/local/etc/haproxy', '{{ proxy_image }}']
+  when: proxy_container.rc != 0
+  changed_when: true
+
+- name: Copy proxy configuration through Docker API
+  ansible.builtin.command:
+    argv: [docker, cp, '{{ state_dir }}/haproxy.cfg', 'gen3-ingress-proxy:/usr/local/etc/haproxy/haproxy.cfg']
+  changed_when: true
+
+- name: Validate configuration in an isolated helper container
+  ansible.builtin.command:
+    argv: [docker, run, --rm, --network, '{{ cluster_name }}', --mount, 'type=volume,source=gen3-ingress-proxy-config,target=/usr/local/etc/haproxy,readonly', '{{ proxy_image }}', haproxy, -c, -f, /usr/local/etc/haproxy/haproxy.cfg]
+  changed_when: false
+
+- name: Start or restart proxy with the current ingress address
+  ansible.builtin.command: docker restart gen3-ingress-proxy
+  changed_when: true
