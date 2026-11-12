@@ -58,6 +58,7 @@ client library, and the required collections into it:
 
 	source "$HOME/.gen3-local-tools/bin/activate"
 	python -m pip install --upgrade pip
+
 	python -m pip install ansible kubernetes==36.0.2 'boto3>=1.34' 'python-dateutil<3' PyYAML
 	ansible-galaxy collection install kubernetes.core amazon.aws
 
@@ -90,7 +91,7 @@ Start Docker Desktop and verify the tools:
 
 Use a ``talosctl`` client from the same Talos minor release as the cluster
 (``v1.14.x`` for the supplied playbook). If you already have other Kubernetes
-or Talos clusters configured, leave their contexts intact; the playbook
+or Talos clusters configured, leave their contexts intact, the playbook
 selects the local context by matching its Docker endpoint.
 
 Install prerequisites on Debian
@@ -258,14 +259,27 @@ Check deployments and persistent volumes:
 	kubectl get jobs -n gen3
 	curl -f http://gen3.kind.test/user/_status
 
-To open the Gen3 portal and log in:
+Create the training account after deploying the application. Run the following
+command from the repository root:
+
+.. code-block:: console
+
+   ansible-playbook gen3-deployment/04-add-training-user.yaml
+
+To open the Gen3 portal and log in with the training account:
 
 #. Open a browser on the deployment host and go to
 	`http://gen3.kind.test <http://gen3.kind.test>`_.
 #. Select **Log In** (or **Login**) and choose **Training LDAP** as the
 	identity provider.
-#. Enter username ``mongoose`` and password ``mangoose``, then submit the
+#. Enter username ``training`` and password ``training123``, then submit the
 	login form. You should be redirected back to the Gen3 portal.
+
+
+.. note::
+
+   If you overrode ``training_password`` when running the playbook, use that
+   password instead of ``training123``.
 
 
 Refresh search after metadata changes
