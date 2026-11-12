@@ -1,0 +1,45 @@
+$schema: http://json-schema.org/draft-04/schema#
+id: blood
+title: blood
+type: object
+namespace: https://link-to-data-portal/
+category: biospecimen
+program: '*'
+project: '*'
+description: Blood sample node
+submittable: true
+validators: null
+systemProperties:
+- id
+- project_id
+- state
+- created_datetime
+- updated_datetime
+uniqueKeys:
+- - id
+- - project_id
+  - submitter_id
+required:
+- submitter_id
+- type
+links:
+- name: patients
+  backref: bloods
+  label: part_of
+  target_type: patient
+  multiplicity: many_to_one
+  required: true
+properties:
+  $ref: _definitions.yaml#/ubiquitous_properties
+  blood_id:
+    type: string
+    description: The blood sample ID.
+  patient_id:
+    type: string
+    description: The patient ID.
+  blood_type:
+    type: string
+    description: The blood type.
+  patients:
+    $ref: _definitions.yaml#/to_one
+additionalProperties: false
