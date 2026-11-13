@@ -1,8 +1,7 @@
 Gen3 Components
 =====================================
 
-Learn how Gen3 services work together before following a role-based stream.
-These services handle identity, permissions, metadata, file indexing, search,
+Different Gen3 services work together to handle identity, permissions, metadata, file indexing, search,
 and workspaces.
 
 .. contents:: Components on this page
@@ -13,10 +12,6 @@ and workspaces.
    :alt: All fourteen Gen3 components grouped into identity and access, structured metadata and search, files and discovery, and workspaces and jobs, with the Data Portal above.
    :align: center
    :width: 100%
-
-   A conceptual map of the Gen3 components described below. The services
-   enabled depend on the deployment; PostgreSQL, Elasticsearch, object storage,
-   and Kubernetes provide supporting infrastructure.
 
 
 .. _gen3-component-arborist:
