@@ -54,7 +54,7 @@ token or file-transfer service.
 
 The SDK wraps the HTTP APIs. A token identifies your session, while permissions
 still determine which projects and files you can access. See the
-:doc:`component guide </components/index>` for the individual services.
+:doc:`component guide </overview/components>` for the individual services.
 
 Service descriptions are based on the `Gen3 microservices guide
 <https://gen3.org/resources/developer/microservice/>`_ and `data-service

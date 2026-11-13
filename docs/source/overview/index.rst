@@ -117,7 +117,7 @@ Data access
 ~~~~~~~~~~~
 
 Gen3 uses attribute-based access control to protect data, compute resources,
-and user-interface components. :doc:`Arborist <../components/01-arborist>` is the policy engine. Access rules
+and user-interface components. :ref:`Arborist <gen3-component-arborist>` is the policy engine. Access rules
 can be maintained in YAML allowlists or synchronised with an external
 authorisation source.
 
@@ -133,14 +133,14 @@ Users can access data in several ways:
 Data search
 ~~~~~~~~~~~
 
-:doc:`Peregrine <../components/08-peregrine>` and :doc:`Guppy <../components/04-guppy>` provide structured-data query capabilities.
-:doc:`Peregrine <../components/08-peregrine>` works with the PostgreSQL representation of the data model, while
-:doc:`Guppy <../components/04-guppy>` queries data transformed into Elasticsearch. The Query page provides an
+:ref:`Peregrine <gen3-component-peregrine>` and :ref:`Guppy <gen3-component-guppy>` provide structured-data query capabilities.
+:ref:`Peregrine <gen3-component-peregrine>` works with the PostgreSQL representation of the data model, while
+:ref:`Guppy <gen3-component-guppy>` queries data transformed into Elasticsearch. The Query page provides an
 interactive query builder and schema viewer, and the Exploration page supports
 faceted cohort building.
 
-The :doc:`metadata service <../components/07-metadata-service>` searches semi-structured records by key-value pairs and
-can support aliases used by crosswalk services. :doc:`Indexd <../components/06-indexd>` searches file
+The :ref:`metadata service <gen3-component-metadata-service>` searches semi-structured records by key-value pairs and
+can support aliases used by crosswalk services. :ref:`Indexd <gen3-component-indexd>` searches file
 metadata by identifier; it does not search inside files.
 
 Data analysis
@@ -197,5 +197,5 @@ components:
 
 
 
-Continue with :doc:`../components/index`, then choose the :doc:`/users/index`,
+Continue with :doc:`components`, then choose the :doc:`/users/index`,
 :doc:`/data-managers/index`, or :doc:`/operators/index` stream.

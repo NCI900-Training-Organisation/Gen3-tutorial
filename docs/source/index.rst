@@ -16,7 +16,7 @@ provide and maintain the platform. One person may follow more than one stream.
    :maxdepth: 2
 
    overview/index
-   components/index
+   overview/components
    users/index
    data-managers/index
    operators/index
