@@ -2,12 +2,57 @@
 Build Data Dictionary
 ============================
 
-The input file is stored at ``sample-data-dict/input.yaml``. To generate the data dictionary, run the following commands from the ``sample-data-dict`` directory:
+Prepare your terminal
+---------------------
+
+Install Gen3SchemaDev using :doc:`03-setup-Gen3SchemaDev` first. From the
+repository root, select your platform and activate the shared Python
+environment. The selection stays synchronized with the other platform tabs
+in this tutorial.
+
+.. tab-set::
+   :sync-group: operating-system
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         cd sample-data-dict
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Use a WSL Bash terminal, with Python, Gen3SchemaDev, and the repository
+      inside WSL. Run the commands below in WSL rather than PowerShell.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         cd sample-data-dict
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         cd sample-data-dict
+
+Generate, validate, and bundle
+------------------------------
+
+The remaining commands are shared across macOS, Windows (WSL), and Linux.
+Run them in the same terminal from the ``sample-data-dict`` directory. The
+input file is ``input.yaml``.
 
 .. code-block:: bash
 
-	cd sample-data-dict
-	
 	mkdir -p output-schema
 
 	gen3schemadev generate -i input.yaml -o output-schema
