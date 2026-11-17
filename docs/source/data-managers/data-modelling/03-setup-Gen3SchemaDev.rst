@@ -10,9 +10,39 @@ Activate the shared environment
 
 In each new terminal session, activate the environment:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-   source "$HOME/.gen3-local-tools/bin/activate"
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+
 
 Confirm that the active Python comes from the shared environment:
 
@@ -26,18 +56,80 @@ Install Gen3SchemaDev
 
 Install Gen3SchemaDev into the active shared environment:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-   source "$HOME/.gen3-local-tools/bin/activate"
-   python -m pip install gen3schemadev
-   gen3schemadev --version
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         python -m pip install gen3schemadev
+         gen3schemadev --version
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         python -m pip install gen3schemadev
+         gen3schemadev --version
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+         python -m pip install gen3schemadev
+         gen3schemadev --version
+
 
 Activate the Python environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For subsequent sessions, activate the shared environment:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-   source "$HOME/.gen3-local-tools/bin/activate"
+   .. tab-item:: macOS
+      :sync: macos
 
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: bash
+
+         source "$HOME/.gen3-local-tools/bin/activate"

@@ -5,6 +5,11 @@ Start with the Gen3 overview and component guide, then follow the stream for
 your role. Users work with data, data managers design its model, and operators
 provide and maintain the platform. One person may follow more than one stream.
 
+Choose **macOS**, **Windows (WSL)**, or **Linux** wherever platform tabs appear.
+Your selection is shared across the platform tabs. Windows shell examples run
+in WSL using Bash. Commands outside tabs are shared; deployment playbooks
+retain the platform requirements stated in their guides.
+
 .. figure:: /images/01-gen3-roles.png
    :alt: Three Gen3 learning streams: users authenticate and exchange data; data managers design and validate models; operators deploy and maintain the platform.
    :align: center

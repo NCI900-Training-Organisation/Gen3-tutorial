@@ -20,10 +20,42 @@ commons. It uses the API credentials in the repository-root
 Activate the shared Python environment and run the uploader from the repository
 root:
 
-.. code-block:: console
+.. tab-set::
+   :sync-group: operating-system
 
-	source "$HOME/.gen3-local-tools/bin/activate"
-	python src/02-upload_sample_file.py
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/02-upload_sample_file.py
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/02-upload_sample_file.py
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/02-upload_sample_file.py
+
 
 The script asks Fence for a file GUID and a short-lived presigned S3 URL, then
 transfers the FASTQ bytes to that URL. The URL and API token are not printed.
@@ -40,4 +72,3 @@ that the infrastructure playbook has configured the local hostnames.
 
 Once the file upload succeeds, use its actual GUID and metadata when preparing
 the ``seqrun`` record, as described in :doc:`03-register_sample_metadata`.
-

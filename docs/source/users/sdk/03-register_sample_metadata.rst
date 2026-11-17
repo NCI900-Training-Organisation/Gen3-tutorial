@@ -12,12 +12,48 @@ Prepare the environment and credentials
 Install the SDK as described in :doc:`/users/03-install-sdk`, then activate the
 shared environment:
 
-.. code-block:: console
+.. tab-set::
+   :sync-group: operating-system
 
-   cd /path/to/Gen3-tutorial
-   source "$HOME/.gen3-local-tools/bin/activate"
-   export GEN3_ENDPOINT="http://gen3.kind.test"
-   export GEN3_CREDENTIALS="$PWD/credentials.json"
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: console
+
+         cd /path/to/Gen3-tutorial
+         source "$HOME/.gen3-local-tools/bin/activate"
+         export GEN3_ENDPOINT="http://gen3.kind.test"
+         export GEN3_CREDENTIALS="$PWD/credentials.json"
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: console
+
+         cd /path/to/Gen3-tutorial
+         source "$HOME/.gen3-local-tools/bin/activate"
+         export GEN3_ENDPOINT="http://gen3.kind.test"
+         export GEN3_CREDENTIALS="$PWD/credentials.json"
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: console
+
+         cd /path/to/Gen3-tutorial
+         source "$HOME/.gen3-local-tools/bin/activate"
+         export GEN3_ENDPOINT="http://gen3.kind.test"
+         export GEN3_CREDENTIALS="$PWD/credentials.json"
+
 
 Replace ``/path/to/Gen3-tutorial`` with your repository location. The scripts
 in ``src/`` read ``credentials.json`` from the repository root. Here we assume that ``credentials.json`` 
@@ -54,31 +90,105 @@ Submit the JSON records in dependency order: patient, blood, urine, plasma,
 and DNA. This command uses **Sheepdog** to validate the records against the
 data dictionary and store them in **PostgreSQL**:
 
-.. code-block:: console
+.. tab-set::
+   :sync-group: operating-system
 
-   python - <<'PY'
-   import json
-   import os
-   from pathlib import Path
+   .. tab-item:: macOS
+      :sync: macos
 
-   from gen3.auth import Gen3Auth
-   from gen3.submission import Gen3Submission
+      Use Terminal (Bash or Zsh).
 
-   credentials = Path(os.environ["GEN3_CREDENTIALS"]).expanduser()
-   if not credentials.is_file():
-       raise SystemExit(f"Credentials file not found: {credentials}")
+      .. code-block:: console
 
-   auth = Gen3Auth(
-       endpoint=os.environ["GEN3_ENDPOINT"],
-       refresh_file=str(credentials),
-   )
-   submission = Gen3Submission(auth)
-   for name in ("patient", "blood", "urine", "plasma", "dna"):
-       path = Path("sample-data") / f"{name}.json"
-       records = json.loads(path.read_text(encoding="utf-8"))
-       submission.submit_record("training", "demo", records)
-       print(f"Submitted {len(records)} records from {path.name}.")
-   PY
+         python - <<'PY'
+         import json
+         import os
+         from pathlib import Path
+
+         from gen3.auth import Gen3Auth
+         from gen3.submission import Gen3Submission
+
+         credentials = Path(os.environ["GEN3_CREDENTIALS"]).expanduser()
+         if not credentials.is_file():
+             raise SystemExit(f"Credentials file not found: {credentials}")
+
+         auth = Gen3Auth(
+             endpoint=os.environ["GEN3_ENDPOINT"],
+             refresh_file=str(credentials),
+         )
+         submission = Gen3Submission(auth)
+         for name in ("patient", "blood", "urine", "plasma", "dna"):
+             path = Path("sample-data") / f"{name}.json"
+             records = json.loads(path.read_text(encoding="utf-8"))
+             submission.submit_record("training", "demo", records)
+             print(f"Submitted {len(records)} records from {path.name}.")
+         PY
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: console
+
+         python - <<'PY'
+         import json
+         import os
+         from pathlib import Path
+
+         from gen3.auth import Gen3Auth
+         from gen3.submission import Gen3Submission
+
+         credentials = Path(os.environ["GEN3_CREDENTIALS"]).expanduser()
+         if not credentials.is_file():
+             raise SystemExit(f"Credentials file not found: {credentials}")
+
+         auth = Gen3Auth(
+             endpoint=os.environ["GEN3_ENDPOINT"],
+             refresh_file=str(credentials),
+         )
+         submission = Gen3Submission(auth)
+         for name in ("patient", "blood", "urine", "plasma", "dna"):
+             path = Path("sample-data") / f"{name}.json"
+             records = json.loads(path.read_text(encoding="utf-8"))
+             submission.submit_record("training", "demo", records)
+             print(f"Submitted {len(records)} records from {path.name}.")
+         PY
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: console
+
+         python - <<'PY'
+         import json
+         import os
+         from pathlib import Path
+
+         from gen3.auth import Gen3Auth
+         from gen3.submission import Gen3Submission
+
+         credentials = Path(os.environ["GEN3_CREDENTIALS"]).expanduser()
+         if not credentials.is_file():
+             raise SystemExit(f"Credentials file not found: {credentials}")
+
+         auth = Gen3Auth(
+             endpoint=os.environ["GEN3_ENDPOINT"],
+             refresh_file=str(credentials),
+         )
+         submission = Gen3Submission(auth)
+         for name in ("patient", "blood", "urine", "plasma", "dna"):
+             path = Path("sample-data") / f"{name}.json"
+             records = json.loads(path.read_text(encoding="utf-8"))
+             submission.submit_record("training", "demo", records)
+             print(f"Submitted {len(records)} records from {path.name}.")
+         PY
+
 
 * **Metadata submission:** This command submits patient, blood, urine, plasma,
   and DNA records. Uploading the FASTQ bytes and creating its ``seqrun``
@@ -115,10 +225,42 @@ Register the uploaded file
 Replace the example value with the full GUID printed by the uploader,
 including any prefix such as ``PREFIX/``:
 
-.. code-block:: console
+.. tab-set::
+   :sync-group: operating-system
 
-   export GEN3_FILE_GUID='PREFIX/your-guid-here'
-   python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: console
+
+         export GEN3_FILE_GUID='PREFIX/your-guid-here'
+         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: console
+
+         export GEN3_FILE_GUID='PREFIX/your-guid-here'
+         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: console
+
+         export GEN3_FILE_GUID='PREFIX/your-guid-here'
+         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+
 
 The registration script reads the **Indexd** record and, when needed, finalises
 its size, MD5 checksum, and storage location. It then submits a ``seqrun`` to
@@ -157,5 +299,3 @@ instead:
 
 Wait for the playbook to finish successfully, then reload Exploration in the
 browser. See :doc:`/operators/01-refresh-search` for the operator workflow.
-
-

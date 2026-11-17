@@ -22,10 +22,42 @@ the script does not display either value.
 Activate the shared Python environment and run the downloader from the
 repository root:
 
-.. code-block:: console
+.. tab-set::
+   :sync-group: operating-system
 
-	source "$HOME/.gen3-local-tools/bin/activate"
-	python src/04-download_sample_file.py
+   .. tab-item:: macOS
+      :sync: macos
+
+      Use Terminal (Bash or Zsh).
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/04-download_sample_file.py
+
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      Run these commands in a WSL Bash terminal, with Python and the repository
+      inside WSL. Native PowerShell commands are not covered here.
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/04-download_sample_file.py
+
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      Use a Bash terminal.
+
+      .. code-block:: console
+
+          source "$HOME/.gen3-local-tools/bin/activate"
+          python src/04-download_sample_file.py
+
 
 By default, the script downloads GUID
 ``PREFIX/3ee620db-06c5-46c2-9bef-7e6729b8c8bd`` to ``downloads/``. It looks up
@@ -45,5 +77,3 @@ replace it, pass ``--overwrite``:
 .. code-block:: console
 
 	python src/04-download_sample_file.py --overwrite
-
-
