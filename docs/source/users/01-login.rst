@@ -1,6 +1,13 @@
 Log in to the Gen3 Portal
 =========================
 
+.. note::
+
+   Before you can log in, you need access to a running Gen3 cluster. Ask your
+   operator for access to an existing cluster, or follow the
+   :doc:`local deployment guide </operators/local-deployment/01-local-deploy>`
+   to deploy one locally.
+
 Use the portal address supplied by your operator. For this repository's local
 training environment, open `http://gen3.kind.test <http://gen3.kind.test>`_.
 
