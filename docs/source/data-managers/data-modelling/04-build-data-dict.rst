@@ -47,39 +47,129 @@ in this tutorial.
 Generate, validate, and bundle
 ------------------------------
 
-The remaining commands are shared across macOS, Windows (WSL), and Linux.
-Run them in the same terminal from the ``sample-data-dict`` directory. The
-input file is ``input.yaml``.
+Select your platform for each command below. Run the commands in the same
+terminal from the ``sample-data-dict`` directory. The input file is
+``input.yaml``. Windows commands use WSL Bash.
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-	mkdir -p output-schema
+   .. tab-item:: macOS
+      :sync: macos
 
-	gen3schemadev generate -i input.yaml -o output-schema
+      .. code-block:: bash
 
+          mkdir -p output-schema
+
+          gen3schemadev generate -i input.yaml -o output-schema
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      .. code-block:: bash
+
+          mkdir -p output-schema
+
+          gen3schemadev generate -i input.yaml -o output-schema
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      .. code-block:: bash
+
+          mkdir -p output-schema
+
+          gen3schemadev generate -i input.yaml -o output-schema
 
 
 Validate the generated schemas before bundling them:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-	gen3schemadev validate -y output-schema
+   .. tab-item:: macOS
+      :sync: macos
+
+      .. code-block:: bash
+
+          gen3schemadev validate -y output-schema
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      .. code-block:: bash
+
+          gen3schemadev validate -y output-schema
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      .. code-block:: bash
+
+          gen3schemadev validate -y output-schema
+
 
 Fix validation errors in ``input.yaml``, remove or regenerate the generated output if necessary, and run the generation and validation commands again.
 Now the individual node schemas can be combined into one JSON file. Create a directory for JSON output and write the bundle there:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-	mkdir -p output-json
+   .. tab-item:: macOS
+      :sync: macos
 
-	gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+      .. code-block:: bash
+
+          mkdir -p output-json
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      .. code-block:: bash
+
+          mkdir -p output-json
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      .. code-block:: bash
+
+          mkdir -p output-json
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
 
 The resulting ``output-json/bundled-schema.json`` contains the schemas needed to represent the complete data dictionary.
 Then generate a visual representation from the bundled schema:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-	gen3schemadev visualise -i output-json/bundled-schema.json
+   .. tab-item:: macOS
+      :sync: macos
+
+      .. code-block:: bash
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      .. code-block:: bash
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      .. code-block:: bash
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
 
 You should be able to see the visual representation of the data dictionary in your browser. 
 
@@ -104,19 +194,53 @@ Complete workflow
 
 From ``sample-data-dict``, the complete workflow is:
 
-.. code-block:: bash
+.. tab-set::
+   :sync-group: operating-system
 
-	mkdir -p output-schema output-json
+   .. tab-item:: macOS
+      :sync: macos
 
-	gen3schemadev generate -i input.yaml -o output-schema
+      .. code-block:: bash
 
-	gen3schemadev validate -y output-schema
+          mkdir -p output-schema output-json
 
-	gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+          gen3schemadev generate -i input.yaml -o output-schema
 
-	gen3schemadev visualise -i output-json/bundled-schema.json
+          gen3schemadev validate -y output-schema
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
+   .. tab-item:: Windows (WSL)
+      :sync: windows
+
+      .. code-block:: bash
+
+          mkdir -p output-schema output-json
+
+          gen3schemadev generate -i input.yaml -o output-schema
+
+          gen3schemadev validate -y output-schema
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      .. code-block:: bash
+
+          mkdir -p output-schema output-json
+
+          gen3schemadev generate -i input.yaml -o output-schema
+
+          gen3schemadev validate -y output-schema
+
+          gen3schemadev bundle -i output-schema -f output-json/bundled-schema.json
+
+          gen3schemadev visualise -i output-json/bundled-schema.json
+
 
 After changing ``input.yaml``, repeat the workflow so that the generated schemas and bundled JSON reflect the updated data model.
-
-
-
