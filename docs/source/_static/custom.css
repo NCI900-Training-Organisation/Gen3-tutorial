@@ -8,7 +8,7 @@ img.logo__image {
 }
 
 code.literal {
-    color: #8c1b13;
+    color: var(--pst-color-text-base);
 }
 
 .admonition.exercise {
