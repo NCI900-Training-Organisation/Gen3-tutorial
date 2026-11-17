@@ -38,8 +38,5 @@ tokens. **Arborist** evaluates permissions when services check whether you can
 access a project or perform an action. Successful login does not by itself
 grant upload or download permission.
 
-This is portal authentication. Kubernetes administration access is covered in
-the :doc:`operator stream </operators/kubernetes-access/01-login>`.
-
 Next, read :doc:`02-service-flow` and install the SDK before creating an API
 credential for the examples.
