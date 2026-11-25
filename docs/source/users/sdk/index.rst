@@ -16,7 +16,7 @@ its metadata, and download it using API credentials.
 .. toctree::
    :maxdepth: 1
 
-   01-create_program
-   02-upload_sample_file
-   03-register_sample_metadata
-   04-download_sample_file
+   01-create-program
+   02-upload-sample-file
+   03-register-sample-metadata
+   04-download-sample-file

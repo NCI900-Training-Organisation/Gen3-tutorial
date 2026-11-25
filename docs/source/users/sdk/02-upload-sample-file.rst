@@ -9,7 +9,7 @@ with **Arborist**, creates an **Indexd** entry, and supplies a presigned storage
 URL. The script's HTTP PUT sends the file bytes directly to **MinIO**.
 **Sheepdog** is used later to register graph metadata; **Peregrine** queries
 metadata and does not upload the FASTQ file. Continue with
-:doc:`03-register_sample_metadata` after the upload succeeds.
+:doc:`03-register-sample-metadata` after the upload succeeds.
 
 This example uploads ``sample-data/synthetic-demo.fastq`` to the local Gen3
 commons. It uses the API credentials in the repository-root
@@ -71,4 +71,4 @@ local MinIO endpoint is reachable at ``http://minio.gen3.kind.test:9000`` and
 that the infrastructure playbook has configured the local hostnames.
 
 Once the file upload succeeds, use its actual GUID and metadata when preparing
-the ``seqrun`` record, as described in :doc:`03-register_sample_metadata`.
+the ``seqrun`` record, as described in :doc:`03-register-sample-metadata`.

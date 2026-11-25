@@ -79,7 +79,7 @@ If ``training`` already exists but ``demo`` does not, run this command instead:
    python src/01-create_program.py
 
 Skip both commands if ``training/demo`` already exists. These are creation
-commands, so do not run both in sequence. See :doc:`01-create_program` for the
+commands, so do not run both in sequence. See :doc:`01-create-program` for the
 required fields and the meaning of ``submittable: false``.
 
 Submit the patient and sample records
