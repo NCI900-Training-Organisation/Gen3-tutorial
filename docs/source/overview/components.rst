@@ -124,7 +124,7 @@ for structured data.
 
 
 .. figure:: /images/04-gen3-data-services.png
-   :alt: Gen3 data architecture showing Peregrine and Guppy query services.
+   :alt: Data submissions feed PostgreSQL, Tube indexes selected data in Elasticsearch, and portal pages query those stores through Peregrine and Guppy.
    :align: center
 
    Peregrine queries the PostgreSQL graph, while Guppy queries Elasticsearch.

@@ -197,5 +197,10 @@ components:
 
 
 
-Continue with :doc:`components`, then choose the :doc:`/users/index`,
+.. toctree::
+   :maxdepth: 1
+
+   components
+
+After the component guide, choose the :doc:`/users/index`,
 :doc:`/data-managers/index`, or :doc:`/operators/index` stream.

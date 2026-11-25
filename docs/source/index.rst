@@ -21,7 +21,6 @@ retain the platform requirements stated in their guides.
    :maxdepth: 2
 
    overview/index
-   overview/components
    users/index
    data-managers/index
    operators/index
