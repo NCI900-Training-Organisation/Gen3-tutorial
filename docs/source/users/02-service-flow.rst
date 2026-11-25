@@ -60,4 +60,4 @@ Service descriptions are based on the `Gen3 microservices guide
 <https://gen3.org/resources/developer/microservice/>`_ and `data-service
 configuration guide
 <https://docs.gen3.org/gen3-resources/operator-guide/helm/helm-config/helm-config-data-svcs/>`_.
-The scripts in ``src/`` determine the specific local workflow described here.
+The scripts in ``scripts/`` determine the specific local workflow described here.

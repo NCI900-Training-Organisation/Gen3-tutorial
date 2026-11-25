@@ -33,7 +33,7 @@ repository root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/04-download_sample_file.py
+          python scripts/04-download-sample-file.py
 
 
    .. tab-item:: Windows (WSL)
@@ -45,7 +45,7 @@ repository root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/04-download_sample_file.py
+          python scripts/04-download-sample-file.py
 
 
    .. tab-item:: Linux
@@ -56,7 +56,7 @@ repository root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/04-download_sample_file.py
+          python scripts/04-download-sample-file.py
 
 
 By default, the script downloads GUID
@@ -69,11 +69,11 @@ output directory:
 
 .. code-block:: console
 
-	python src/04-download_sample_file.py 'PREFIX/your-guid-here' --output-dir downloads
+	python scripts/04-download-sample-file.py 'PREFIX/your-guid-here' --output-dir downloads
 
 The script refuses to overwrite a local file by default. To intentionally
 replace it, pass ``--overwrite``:
 
 .. code-block:: console
 
-	python src/04-download_sample_file.py --overwrite
+	python scripts/04-download-sample-file.py --overwrite

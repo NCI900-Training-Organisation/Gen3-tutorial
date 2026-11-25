@@ -56,7 +56,7 @@ shared environment:
 
 
 Replace ``/path/to/Gen3-tutorial`` with your repository location. The scripts
-in ``src/`` read ``credentials.json`` from the repository root. Here we assume that ``credentials.json`` 
+in ``scripts/`` read ``credentials.json`` from the repository root. Here we assume that ``credentials.json``
 is available in the repository root. Keep the credentials file private.
 
 **Fence** exchanges it for an access token; **Arborist** governs the relevant
@@ -70,13 +70,13 @@ Your account must have permission to create programs and projects. If neither
 
 .. code-block:: console
 
-   python src/01-create_program.py --create-program
+   python scripts/01-create-program.py --create-program
 
 If ``training`` already exists but ``demo`` does not, run this command instead:
 
 .. code-block:: console
 
-   python src/01-create_program.py
+   python scripts/01-create-program.py
 
 Skip both commands if ``training/demo`` already exists. These are creation
 commands, so do not run both in sequence. See :doc:`01-create-program` for the
@@ -212,7 +212,7 @@ If you have not uploaded the file yet, run:
 
 .. code-block:: console
 
-   python src/02-upload_sample_file.py
+   python scripts/02-upload-sample-file.py
 
 **Fence** authorises the upload and returns a GUID and presigned URL. The
 script transfers bytes to **MinIO**, and **Indexd** tracks the object. Retain
@@ -236,7 +236,7 @@ including any prefix such as ``PREFIX/``:
       .. code-block:: console
 
          export GEN3_FILE_GUID='PREFIX/your-guid-here'
-         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+         python scripts/03-register-sample-metadata.py "$GEN3_FILE_GUID"
 
 
    .. tab-item:: Windows (WSL)
@@ -248,7 +248,7 @@ including any prefix such as ``PREFIX/``:
       .. code-block:: console
 
          export GEN3_FILE_GUID='PREFIX/your-guid-here'
-         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+         python scripts/03-register-sample-metadata.py "$GEN3_FILE_GUID"
 
 
    .. tab-item:: Linux
@@ -259,7 +259,7 @@ including any prefix such as ``PREFIX/``:
       .. code-block:: console
 
          export GEN3_FILE_GUID='PREFIX/your-guid-here'
-         python src/03-register_sample_metadata.py "$GEN3_FILE_GUID"
+         python scripts/03-register-sample-metadata.py "$GEN3_FILE_GUID"
 
 
 The registration script reads the **Indexd** record and, when needed, finalises
@@ -269,7 +269,7 @@ its size, MD5 checksum, and storage location. It then submits a ``seqrun`` to
 
 The file record's ``submitter_id`` is ``SYN-SEQRUN-001``. To register a different
 sample, edit ``SEQ_RUN_SUBMITTER_ID`` and, if applicable,
-``DNA_SUBMITTER_ID`` in ``src/03-register_sample_metadata.py`` before running
+``DNA_SUBMITTER_ID`` in ``scripts/03-register-sample-metadata.py`` before running
 it. Keep the source file and upload bucket settings consistent with the file
 that was actually uploaded.
 

@@ -31,7 +31,7 @@ root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/02-upload_sample_file.py
+          python scripts/02-upload-sample-file.py
 
 
    .. tab-item:: Windows (WSL)
@@ -43,7 +43,7 @@ root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/02-upload_sample_file.py
+          python scripts/02-upload-sample-file.py
 
 
    .. tab-item:: Linux
@@ -54,7 +54,7 @@ root:
       .. code-block:: console
 
           source "$HOME/.gen3-local-tools/bin/activate"
-          python src/02-upload_sample_file.py
+          python scripts/02-upload-sample-file.py
 
 
 The script asks Fence for a file GUID and a short-lived presigned S3 URL, then

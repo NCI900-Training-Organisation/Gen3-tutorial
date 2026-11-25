@@ -30,7 +30,7 @@ def md5sum(path: Path) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("guid", help="GUID printed by upload_sample_file.py")
+    parser.add_argument("guid", help="GUID printed by scripts/02-upload-sample-file.py")
     args = parser.parse_args()
 
     if not CREDENTIALS_FILE.is_file():

@@ -46,7 +46,7 @@ The program schema requires:
 * ``dbgap_accession_number``: its accession identifier. This tutorial uses
   ``LOCAL-SYNTHETIC`` as a training placeholder.
 
-The script ``src/01-create_program.py --create-program`` creates the program
+The script ``scripts/01-create-program.py --create-program`` creates the program
 through the SDK's administrative API. Once the program exists, you can create
 its project and submit metadata.
 
@@ -55,14 +55,14 @@ credentials in ``credentials.json``:
 
 .. code-block:: console
 
-	python src/01-create_program.py
+	python scripts/01-create-program.py
 
 If the ``training`` program does not exist yet, create it together with the
 project:
 
 .. code-block:: console
 
-	python src/01-create_program.py --create-program
+	python scripts/01-create-program.py --create-program
 
 The sample submission script targets program ``training`` and project code
 ``demo``. Create those first, or update the values in
@@ -390,7 +390,7 @@ Register the sequencing file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After uploading ``synthetic-demo.fastq``, the tutorial runs
-``src/03-register_sample_metadata.py`` with the file ID returned by the upload.
+``scripts/03-register-sample-metadata.py`` with the file ID returned by the upload.
 The script submits the following record details to ``training/demo``.
 
 The sequencing-run rule appears in `seqrun.yaml <https://github.com/NCI900-Training-Organisation/Gen3-tutorial/blob/HEAD/sample-data-dict/output-schema/seqrun.yaml#L25>`_.
