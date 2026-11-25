@@ -25,3 +25,4 @@ retain the platform requirements stated in their guides.
    data-managers/index
    operators/index
    references
+   contributors
