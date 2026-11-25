@@ -192,6 +192,8 @@ in :doc:`03-register-sample-metadata`. Reusing the same ``submitter_id`` values 
 or collide with earlier records, so make identifiers unique when adapting
 these examples.
 
+.. _sdk-data-model-submissions:
+
 How the data model guides submissions
 -------------------------------------
 

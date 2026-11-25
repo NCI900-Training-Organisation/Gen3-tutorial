@@ -9,13 +9,11 @@ Gen3SchemaDev.
 .. toctree::
    :maxdepth: 2
 
-   data-modelling/01-data-modelling-101
-   data-modelling/02-data-dictionary
-   data-modelling/03-setup-Gen3SchemaDev
-   data-modelling/04-build-data-dict
+   data-modelling/index
+   etl/index
 
 The model build produces ``sample-data-dict/output-json/bundled-schema.json``.
 Coordinate with an :doc:`operator </operators/index>` to deploy the dictionary
 and update search configuration. Users then follow the
-:doc:`metadata submission guide </users/sdk/03-register_sample_metadata>`
+:doc:`metadata submission guide </users/sdk/03-register-sample-metadata>`
 to submit records that conform to it.
