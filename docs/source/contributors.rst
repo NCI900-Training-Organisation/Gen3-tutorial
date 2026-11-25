@@ -6,5 +6,5 @@ Contributors
 #. `Jiajia Li <https://nci.org.au/about-us/nci-staff-a-z>`__
 #. `Warren Kaplan <https://nci.org.au/about-us/nci-staff-a-z>`__
 
-*ChatGPT has been utilized to enhance and generate texts in this document*.
-*OpenAI. (2024). ChatGPT (August 2024 version).*
+*OpenAI Codex helped draft and edit this documentation*.
+*OpenAI. (2026). Codex (GPT-6).*
