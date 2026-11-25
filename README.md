@@ -1,17 +1,17 @@
-Gen3-tutorial
---------------
+# Gen3 Tutorial
 
-This repository provides an introductory tutorial on setting up infrastructure for GEN3 using OpenStack. It also provides an end-to-end tutorial on how to model data for GEN3 and curate it for different GEN3 components, including, but not limited to, Elasticsearch.
+Learn how to deploy Gen3, design a data model, and use a data commons with synthetic training data. The repository includes a local training deployment and infrastructure notes for NCI OpenStack.
 
+Start with the [published tutorial](https://gen3-tutorial.readthedocs.io/en/latest/), then choose the guide for your role.
 
-https://gen3-tutorial.readthedocs.io/en/latest/
+| Role | What you’ll do |
+| --- | --- |
+| [Users](https://gen3-tutorial.readthedocs.io/en/latest/users/index.html) | Sign in, create API credentials, submit metadata, upload a file, and download it by GUID. |
+| [Data managers](https://gen3-tutorial.readthedocs.io/en/latest/data-managers/index.html) | Build a data dictionary, design ETL mappings for Elasticsearch, and configure the portal’s Explorer tabs. |
+| [Operators](https://gen3-tutorial.readthedocs.io/en/latest/operators/index.html) | Deploy the local training environment, configure identity and storage, and refresh the search index. |
 
+The [hands-on SDK exercises](https://gen3-tutorial.readthedocs.io/en/latest/users/sdk/index.html) use the repository’s workflow scripts and sample data.
 
-TODO
---------
+## Contributors
 
-1. Gen3 SDK tutorial
-    * Submitting data
-    * querying data
-    * Using data for analysis
-2. ETL mapping tutorial
+See the [Contributors page](https://gen3-tutorial.readthedocs.io/en/latest/contributors.html) for contributor credits.
