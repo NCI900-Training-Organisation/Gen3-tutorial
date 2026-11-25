@@ -5,17 +5,17 @@ arborist:
   enabled: true
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   postgres:
     database: arborist
     dbCreate: false
     host: gen3-postgres
-    port: '5432'
+    port: "5432"
     username: arborist_gen3
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
@@ -28,58 +28,58 @@ etl:
   etlForced: false
   etlMapping:
     mappings:
-    - aggregated_props:
-      - fn: count
-        name: _blood_count
-        path: bloods
-      - fn: count
-        name: _urine_count
-        path: urines
-      - fn: count
-        name: _dna_count
-        path: bloods.dnas
-      - fn: count
-        name: _seqrun_count
-        path: bloods.dnas.seqruns
-      doc_type: patient
-      name: training_patient
-      props:
-      - name: submitter_id
-      - name: project_id
-      - name: patient_id
-      - name: _patient_id
-        src: id
-      root: patient
-      type: aggregator
-    - category: data_file
-      doc_type: file
-      injecting_props:
-        patient:
-          props:
-          - fn: set
-            name: _patient_id
-            src: id
+      - name: training_patient
+        doc_type: patient
+        type: aggregator
+        root: patient
+        props:
+          - name: submitter_id
           - name: project_id
-      name: training_file
-      props:
-      - name: object_id
-      - name: md5sum
-      - name: file_name
-      - name: file_size
-      - name: data_category
-      - name: data_format
-      - name: data_type
-      - name: state
-      - name: seqrun_id
-      - name: dna_id
-      root: None
-      target_nodes:
-      - name: seqrun
-        path: dnas.bloods.patients
-      type: collector
+          - name: patient_id
+          - name: _patient_id
+            src: id
+        aggregated_props:
+          - fn: count
+            name: _blood_count
+            path: bloods
+          - fn: count
+            name: _urine_count
+            path: urines
+          - fn: count
+            name: _dna_count
+            path: bloods.dnas
+          - fn: count
+            name: _seqrun_count
+            path: bloods.dnas.seqruns
+      - name: training_file
+        doc_type: file
+        type: collector
+        root: None
+        props:
+          - name: object_id
+          - name: md5sum
+          - name: file_name
+          - name: file_size
+          - name: data_category
+          - name: data_format
+          - name: data_type
+          - name: state
+          - name: seqrun_id
+          - name: dna_id
+        category: data_file
+        injecting_props:
+          patient:
+            props:
+              - fn: set
+                name: _patient_id
+                src: id
+              - name: project_id
+        target_nodes:
+          - name: seqrun
+            path: dnas.bloods.patients
   image:
     spark:
-      tag: '2025.08'
+      tag: "2025.08"
     tube:
       tag: master
       digest: sha256:809c8451a2230976965fb3592f9c6ce1f5d70a23955a9da2fdef16b73610303d
@@ -87,14 +87,14 @@ etl:
   resources:
     spark:
       limits:
-        cpu: '1'
+        cpu: "1"
         memory: 512Mi
       requests:
         cpu: 100m
         memory: 256Mi
     tube:
       limits:
-        cpu: '1'
+        cpu: "1"
         memory: 1Gi
       requests:
         cpu: 100m
@@ -112,8 +112,8 @@ fence:
       presigned_url: false
     ENABLE_S3_UPLOAD: true
     LOGIN_OPTIONS:
-    - idp: generic_oidc_idp
-      name: Training LDAP
+      - idp: generic_oidc_idp
+        name: Training LDAP
     OPENID_CONNECT:
       generic_oidc_idp:
         client_id: gen3
@@ -128,7 +128,8 @@ fence:
         cred: CRED1
         endpoint_url: http://minio.gen3.kind.test:9000
     SESSION_COOKIE_SECURE: false
-  USER_YAML: "authz:\n  anonymous_policies: []\n  all_users_policies: []\n  groups:\n\
+  USER_YAML:
+    "authz:\n  anonymous_policies: []\n  all_users_policies: []\n  groups:\n\
     \  - name: training-admins\n    users:\n    - mongoose\n    - training\n    policies:\n\
     \    - training-admin\n  resources:\n  - name: programs\n    subresources:\n \
     \   - name: training\n      subresources:\n      - name: projects\n        subresources:\n\
@@ -148,79 +149,79 @@ fence:
     enabled: false
   enabled: true
   env:
-  - name: GEN3_UWSGI_TIMEOUT
-    valueFrom:
-      configMapKeyRef:
-        key: uwsgi-timeout
-        name: manifest-global
-        optional: true
-  - name: DD_AGENT_HOST
-    valueFrom:
-      fieldRef:
-        fieldPath: status.hostIP
-  - name: AWS_STS_REGIONAL_ENDPOINTS
-    value: regional
-  - name: PYTHONPATH
-    value: /var/www/fence
-  - name: GEN3_DEBUG
-    value: 'False'
-  - name: PGHOST
-    valueFrom:
-      secretKeyRef:
-        key: host
-        name: fence-dbcreds
-        optional: false
-  - name: PGUSER
-    valueFrom:
-      secretKeyRef:
-        key: username
-        name: fence-dbcreds
-        optional: false
-  - name: PGPASSWORD
-    valueFrom:
-      secretKeyRef:
-        key: password
-        name: fence-dbcreds
-        optional: false
-  - name: PGDB
-    valueFrom:
-      secretKeyRef:
-        key: database
-        name: fence-dbcreds
-        optional: false
-  - name: DBREADY
-    valueFrom:
-      secretKeyRef:
-        key: dbcreated
-        name: fence-dbcreds
-        optional: false
-  - name: DB
-    value: postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)
-  - name: INDEXD_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        key: fence
-        name: indexd-service-creds
-  - name: gen3Env
-    valueFrom:
-      configMapKeyRef:
-        key: hostname
-        name: manifest-global
-  - name: AWS_CONFIG_FILE
-    value: /etc/gen3-local-aws/config
+    - name: GEN3_UWSGI_TIMEOUT
+      valueFrom:
+        configMapKeyRef:
+          key: uwsgi-timeout
+          name: manifest-global
+          optional: true
+    - name: DD_AGENT_HOST
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: AWS_STS_REGIONAL_ENDPOINTS
+      value: regional
+    - name: PYTHONPATH
+      value: /var/www/fence
+    - name: GEN3_DEBUG
+      value: "False"
+    - name: PGHOST
+      valueFrom:
+        secretKeyRef:
+          key: host
+          name: fence-dbcreds
+          optional: false
+    - name: PGUSER
+      valueFrom:
+        secretKeyRef:
+          key: username
+          name: fence-dbcreds
+          optional: false
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: fence-dbcreds
+          optional: false
+    - name: PGDB
+      valueFrom:
+        secretKeyRef:
+          key: database
+          name: fence-dbcreds
+          optional: false
+    - name: DBREADY
+      valueFrom:
+        secretKeyRef:
+          key: dbcreated
+          name: fence-dbcreds
+          optional: false
+    - name: DB
+      value: postgresql://$(PGUSER):$(PGPASSWORD)@$(PGHOST):5432/$(PGDB)
+    - name: INDEXD_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: fence
+          name: indexd-service-creds
+    - name: gen3Env
+      valueFrom:
+        configMapKeyRef:
+          key: hostname
+          name: manifest-global
+    - name: AWS_CONFIG_FILE
+      value: /etc/gen3-local-aws/config
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   postgres:
     database: fence
     dbCreate: false
     host: gen3-postgres
-    port: '5432'
+    port: "5432"
     username: fence_gen3
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
@@ -230,101 +231,101 @@ fence:
   usersync:
     usersync: false
   volumeMounts:
-  - mountPath: /var/www/fence/local_settings.py
-    name: old-config-volume
-    readOnly: true
-    subPath: local_settings.py
-  - mountPath: /var/www/fence/fence_credentials.json
-    name: json-secret-volume
-    readOnly: true
-    subPath: fence_credentials.json
-  - mountPath: /var/www/fence/creds.json
-    name: creds-volume
-    readOnly: true
-    subPath: creds.json
-  - mountPath: /var/www/fence/config_helper.py
-    name: config-helper
-    readOnly: true
-    subPath: config_helper.py
-  - mountPath: /fence/fence/static/img/logo.svg
-    name: logo-volume
-    readOnly: true
-    subPath: logo.svg
-  - mountPath: /fence/fence/static/privacy_policy.md
-    name: privacy-policy
-    readOnly: true
-    subPath: privacy_policy.md
-  - mountPath: /var/www/fence/fence-config-secret.yaml
-    name: config-volume
-    readOnly: true
-    subPath: fence-config.yaml
-  - mountPath: /var/www/fence/yaml_merge.py
-    name: yaml-merge
-    readOnly: true
-    subPath: yaml_merge.py
-  - mountPath: /var/www/fence/fence_google_app_creds_secret.json
-    name: fence-google-app-creds-secret-volume
-    readOnly: true
-    subPath: fence_google_app_creds_secret.json
-  - mountPath: /var/www/fence/fence_google_storage_creds_secret.json
-    name: fence-google-storage-creds-secret-volume
-    readOnly: true
-    subPath: fence_google_storage_creds_secret.json
-  - mountPath: /tmp/keys/readonly/jwt_private_key.pem
-    name: fence-jwt-keys-readonly
-    readOnly: true
-    subPath: jwt_private_key.pem
-  - mountPath: /var/www/fence/fence-config-public.yaml
-    name: config-volume-public
-    readOnly: true
-    subPath: fence-config-public.yaml
-  - mountPath: /etc/gen3-local-aws
-    name: aws-config
-    readOnly: true
-  volumes:
-  - name: old-config-volume
-    secret:
-      secretName: fence-secret
-  - name: json-secret-volume
-    secret:
-      optional: true
-      secretName: fence-json-secret
-  - name: creds-volume
-    secret:
-      secretName: fence-creds
-  - configMap:
+    - mountPath: /var/www/fence/local_settings.py
+      name: old-config-volume
+      readOnly: true
+      subPath: local_settings.py
+    - mountPath: /var/www/fence/fence_credentials.json
+      name: json-secret-volume
+      readOnly: true
+      subPath: fence_credentials.json
+    - mountPath: /var/www/fence/creds.json
+      name: creds-volume
+      readOnly: true
+      subPath: creds.json
+    - mountPath: /var/www/fence/config_helper.py
       name: config-helper
-      optional: true
-    name: config-helper
-  - configMap:
-      name: logo-config
-    name: logo-volume
-  - name: config-volume
-    secret:
-      secretName: fence-config
-  - name: fence-google-app-creds-secret-volume
-    secret:
-      secretName: fence-google-app-creds-secret
-  - name: fence-google-storage-creds-secret-volume
-    secret:
-      secretName: fence-google-storage-creds-secret
-  - name: fence-jwt-keys-readonly
-    secret:
-      secretName: fence-jwt-keys
-  - configMap:
+      readOnly: true
+      subPath: config_helper.py
+    - mountPath: /fence/fence/static/img/logo.svg
+      name: logo-volume
+      readOnly: true
+      subPath: logo.svg
+    - mountPath: /fence/fence/static/privacy_policy.md
       name: privacy-policy
-    name: privacy-policy
-  - configMap:
-      name: fence-yaml-merge
-      optional: false
-    name: yaml-merge
-  - configMap:
-      name: manifest-fence
-      optional: true
-    name: config-volume-public
-  - configMap:
-      name: gen3-training-aws-config
-    name: aws-config
+      readOnly: true
+      subPath: privacy_policy.md
+    - mountPath: /var/www/fence/fence-config-secret.yaml
+      name: config-volume
+      readOnly: true
+      subPath: fence-config.yaml
+    - mountPath: /var/www/fence/yaml_merge.py
+      name: yaml-merge
+      readOnly: true
+      subPath: yaml_merge.py
+    - mountPath: /var/www/fence/fence_google_app_creds_secret.json
+      name: fence-google-app-creds-secret-volume
+      readOnly: true
+      subPath: fence_google_app_creds_secret.json
+    - mountPath: /var/www/fence/fence_google_storage_creds_secret.json
+      name: fence-google-storage-creds-secret-volume
+      readOnly: true
+      subPath: fence_google_storage_creds_secret.json
+    - mountPath: /tmp/keys/readonly/jwt_private_key.pem
+      name: fence-jwt-keys-readonly
+      readOnly: true
+      subPath: jwt_private_key.pem
+    - mountPath: /var/www/fence/fence-config-public.yaml
+      name: config-volume-public
+      readOnly: true
+      subPath: fence-config-public.yaml
+    - mountPath: /etc/gen3-local-aws
+      name: aws-config
+      readOnly: true
+  volumes:
+    - name: old-config-volume
+      secret:
+        secretName: fence-secret
+    - name: json-secret-volume
+      secret:
+        optional: true
+        secretName: fence-json-secret
+    - name: creds-volume
+      secret:
+        secretName: fence-creds
+    - configMap:
+        name: config-helper
+        optional: true
+      name: config-helper
+    - configMap:
+        name: logo-config
+      name: logo-volume
+    - name: config-volume
+      secret:
+        secretName: fence-config
+    - name: fence-google-app-creds-secret-volume
+      secret:
+        secretName: fence-google-app-creds-secret
+    - name: fence-google-storage-creds-secret-volume
+      secret:
+        secretName: fence-google-storage-creds-secret
+    - name: fence-jwt-keys-readonly
+      secret:
+        secretName: fence-jwt-keys
+    - configMap:
+        name: privacy-policy
+      name: privacy-policy
+    - configMap:
+        name: fence-yaml-merge
+        optional: false
+      name: yaml-merge
+    - configMap:
+        name: manifest-fence
+        optional: true
+      name: config-volume-public
+    - configMap:
+        name: gen3-training-aws-config
+      name: aws-config
 global:
   aws:
     enabled: false
@@ -349,7 +350,7 @@ global:
     master:
       database: postgres
       host: gen3-postgres
-      port: '5432'
+      port: "5432"
   publicDataSets: false
   topologySpread:
     enabled: false
@@ -363,16 +364,16 @@ guppy:
   esEndpoint: gen3-elasticsearch:9200
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   indices:
-  - index: training_patient
-    type: patient
-  - index: training_file
-    type: file
+    - index: training_patient
+      type: patient
+    - index: training_file
+      type: file
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
@@ -382,49 +383,49 @@ indexd:
     enabled: false
   enabled: true
   env:
-  - name: ARBORIST
-    value: 'true'
-  - name: GEN3_DEBUG
-    value: 'False'
+    - name: ARBORIST
+      value: "true"
+    - name: GEN3_DEBUG
+      value: "False"
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   postgres:
     database: indexd
     dbCreate: false
     host: gen3-postgres
-    port: '5432'
+    port: "5432"
     username: indexd_gen3
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
       memory: 128Mi
   volumeMounts:
-  - mountPath: /etc/uwsgi/uwsgi.ini
-    name: uwsgi-config
-    subPath: uwsgi.ini
-  - mountPath: /var/www/indexd/local_settings.py
-    name: config-volume
-    readOnly: true
-    subPath: local_settings.py
-  - mountPath: /indexd/deployment/wsgi/gunicorn.conf.py
-    name: gunicorn-conf
-    readOnly: true
-    subPath: gunicorn.conf.py
-  volumes:
-  - configMap:
-      name: indexd-uwsgi
-    name: uwsgi-config
-  - name: config-volume
-    secret:
-      secretName: indexd-settings
-  - configMap:
+    - mountPath: /etc/uwsgi/uwsgi.ini
+      name: uwsgi-config
+      subPath: uwsgi.ini
+    - mountPath: /var/www/indexd/local_settings.py
+      name: config-volume
+      readOnly: true
+      subPath: local_settings.py
+    - mountPath: /indexd/deployment/wsgi/gunicorn.conf.py
       name: gunicorn-conf
-    name: gunicorn-conf
+      readOnly: true
+      subPath: gunicorn.conf.py
+  volumes:
+    - configMap:
+        name: indexd-uwsgi
+      name: uwsgi-config
+    - name: config-volume
+      secret:
+        secretName: indexd-settings
+    - configMap:
+        name: gunicorn-conf
+      name: gunicorn-conf
 peregrine:
   autoscaling:
     enabled: false
@@ -432,43 +433,44 @@ peregrine:
   env: []
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   postgres:
     database: sheepdog
     dbCreate: false
     host: gen3-postgres
-    port: '5432'
+    port: "5432"
     username: peregrine_gen3
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
       memory: 128Mi
   volumeMounts:
-  - mountPath: /var/www/peregrine/settings.py
-    name: config-volume
-    readOnly: true
-    subPath: settings.py
-  - mountPath: /peregrine/bin/settings.py
-    name: config-volume
-    readOnly: true
-    subPath: settings.py
+    - mountPath: /var/www/peregrine/settings.py
+      name: config-volume
+      readOnly: true
+      subPath: settings.py
+    - mountPath: /peregrine/bin/settings.py
+      name: config-volume
+      readOnly: true
+      subPath: settings.py
   volumes:
-  - emptyDir: {}
-    name: shared-data
-  - name: config-volume
-    secret:
-      secretName: peregrine-secret
+    - emptyDir: {}
+      name: shared-data
+    - name: config-volume
+      secret:
+        secretName: peregrine-secret
 portal:
   autoscaling:
     enabled: false
   enabled: true
   gitops:
     gen3Bundle: commons
-    json: "{\n  \"graphql\": {\n    \"boardCounts\": [\n      {\n        \"graphql\"\
+    json:
+      "{\n  \"graphql\": {\n    \"boardCounts\": [\n      {\n        \"graphql\"\
       : \"_patient_count\",\n        \"name\": \"Patient\",\n        \"plural\": \"\
       Patients\"\n      },\n      {\n        \"graphql\": \"_blood_count\",\n    \
       \    \"name\": \"Blood sample\",\n        \"plural\": \"Blood samples\"\n  \
@@ -558,14 +560,14 @@ portal:
       \  }\n  ]\n}"
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   nodeOptions: --max-old-space-size=1536
   podSecurityContext:
     fsGroup: 1000
   replicaCount: 1
   resources:
     limits:
-      cpu: '2'
+      cpu: "2"
       memory: 3Gi
     requests:
       cpu: 100m
@@ -579,13 +581,13 @@ revproxy:
   enabled: true
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   ingress:
     enabled: false
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
@@ -596,17 +598,17 @@ sheepdog:
   enabled: true
   image:
     pullPolicy: IfNotPresent
-    tag: '2025.08'
+    tag: "2025.08"
   postgres:
     database: sheepdog
     dbCreate: false
     host: gen3-postgres
-    port: '5432'
+    port: "5432"
     username: sheepdog_gen3
   replicaCount: 1
   resources:
     limits:
-      cpu: '1'
+      cpu: "1"
       memory: 512Mi
     requests:
       cpu: 25m
