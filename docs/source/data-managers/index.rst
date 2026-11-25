@@ -11,6 +11,7 @@ Gen3SchemaDev.
 
    data-modelling/index
    etl/index
+   portal-design/01-design
 
 The model build produces ``sample-data-dict/output-json/bundled-schema.json``.
 Coordinate with an :doc:`operator </operators/index>` to deploy the dictionary
